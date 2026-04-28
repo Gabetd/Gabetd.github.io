@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tanitian Travel Prototype</title>
+  <style>
+    :root {
+      --bg: #f7fbfb;
+      --surface: rgba(255, 255, 255, 0.88);
+      --surface-strong: #ffffff;
+      --text: #183133;
+      --muted: #5d7477;
+      --brand: #0f8b8d;
+      --brand-strong: #0b6c6e;
+      --accent: #f4b942;
+      --accent-soft: #fff3d7;
+      --line: #d8e8e9;
+      --success: #1b7f5d;
+      --shadow: 0 18px 48px rgba(22, 53, 56, 0.08);
+      --radius: 22px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top right, rgba(15, 139, 141, 0.12), transparent 28%),
+        radial-gradient(circle at top left, rgba(244, 185, 66, 0.14), transparent 26%),
+        linear-gradient(180deg, #eff8f8 0%, #f7fbfb 40%, #ffffff 100%);
+      min-height: 100vh;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .container {
+      width: min(1180px, calc(100vw - 32px));
+      margin: 0 auto;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      backdrop-filter: blur(16px);
+      background: rgba(247, 251, 251, 0.82);
+      border-bottom: 1px solid rgba(216, 232, 233, 0.8);
+    }
+
+    .topbar-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 16px 0;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+    }
+
+    .brand-mark {
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      color: white;
+      background: linear-gradient(135deg, var(--brand), #45b7b9);
+      box-shadow: var(--shadow);
+      font-size: 20px;
+    }
+
+    .nav-links {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .nav-links a {
+      padding: 10px 14px;
+      border-radius: 999px;
+      color: var(--muted);
+      font-size: 0.95rem;
+      transition: 0.2s ease;
+    }
+
+    .nav-links a:hover,
+    .nav-links a.active {
+      background: white;
+      color: var(--text);
+      box-shadow: 0 6px 24px rgba(12, 57, 61, 0.08);
+    }
+
+    .hero {
+      padding: 42px 0 26px;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.45fr 0.95fr;
+      gap: 22px;
+      align-items: stretch;
+    }
+
+    .hero-main,
+    .hero-side,
+    .section-card,
+    .activity-card,
+    .stay-card,
+    .itinerary-card,
+    .faq-item,
+    .transport-card,
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid rgba(216, 232, 233, 0.85);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .hero-main {
+      padding: 32px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-main::after {
+      content: "";
+      position: absolute;
+      inset: auto -80px -120px auto;
+      width: 240px;
+      height: 240px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(244, 185, 66, 0.22), transparent 70%);
+      pointer-events: none;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: #7a5a00;
+      font-size: 0.88rem;
+      font-weight: 700;
+      margin-bottom: 14px;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin: 0;
+    }
+
+    h1 {
+      font-size: clamp(2rem, 4vw, 3.6rem);
+      line-height: 1.04;
+      margin-bottom: 14px;
+      max-width: 12ch;
+    }
+
+    .hero-copy {
+      font-size: 1.05rem;
+      line-height: 1.65;
+      color: var(--muted);
+      max-width: 58ch;
+    }
+
+    .button-row {
+      margin-top: 22px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    button,
+    .button-link {
+      border: none;
+      cursor: pointer;
+      font: inherit;
+      transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
+    }
+
+    .button-primary,
+    .button-secondary,
+    .chip,
+    .filter-button,
+    .mini-chip {
+      border-radius: 999px;
+      padding: 12px 18px;
+      font-weight: 700;
+    }
+
+    .button-primary {
+      color: white;
+      background: linear-gradient(135deg, var(--brand), var(--brand-strong));
+      box-shadow: 0 12px 26px rgba(15, 139, 141, 0.22);
+    }
+
+    .button-secondary {
+      color: var(--text);
+      background: white;
+      border: 1px solid var(--line);
+    }
+
+    .button-primary:hover,
+    .button-secondary:hover,
+    .chip:hover,
+    .filter-button:hover,
+    .faq-trigger:hover,
+    .nav-links a:hover {
+      transform: translateY(-1px);
+    }
+
+    .hero-side {
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .hero-side h3 {
+      font-size: 1.05rem;
+      margin-bottom: 8px;
+    }
+
+    .quick-facts {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .stat-card {
+      padding: 16px;
+      background: rgba(255, 255, 255, 0.74);
+      min-height: 92px;
+    }
+
+    .stat-label {
+      font-size: 0.83rem;
+      color: var(--muted);
+      margin-bottom: 7px;
+    }
+
+    .stat-value {
+      font-size: 1.1rem;
+      font-weight: 800;
+    }
+
+    .transport-strip {
+      padding: 12px 16px;
+      border: 1px dashed #b9d9db;
+      background: #f4fbfb;
+      border-radius: 18px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    section {
+      padding: 12px 0 10px;
+      scroll-margin-top: 96px;
+    }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .section-head p {
+      color: var(--muted);
+      max-width: 65ch;
+      line-height: 1.6;
+    }
+
+    .two-up {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+
+    .section-card {
+      padding: 24px;
+    }
+
+    .pill-list,
+    .tag-list,
+    .traveler-toggle {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .chip,
+    .filter-button,
+    .mini-chip {
+      background: white;
+      border: 1px solid var(--line);
+      color: var(--muted);
+    }
+
+    .chip.active,
+    .filter-button.active,
+    .mini-chip.active {
+      color: white;
+      background: linear-gradient(135deg, var(--brand), var(--brand-strong));
+      border-color: transparent;
+      box-shadow: 0 12px 26px rgba(15, 139, 141, 0.18);
+    }
+
+    .recommended {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 11px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: #7a5a00;
+      font-size: 0.82rem;
+      font-weight: 800;
+    }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+    }
+
+    .activity-card,
+    .stay-card,
+    .itinerary-card,
+    .transport-card {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      min-height: 100%;
+    }
+
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    .price {
+      white-space: nowrap;
+      font-weight: 800;
+      color: var(--success);
+    }
+
+    .card-copy {
+      color: var(--muted);
+      line-height: 1.6;
+      flex: 1;
+    }
+
+    .meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .mini-chip {
+      padding: 8px 12px;
+      font-size: 0.86rem;
+      font-weight: 700;
+    }
+
+    .filters-bar {
+      display: grid;
+      grid-template-columns: 1.35fr auto;
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .search-box {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 16px;
+      border-radius: 18px;
+      background: white;
+      border: 1px solid var(--line);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.75);
+    }
+
+    .search-box input {
+      flex: 1;
+      border: none;
+      outline: none;
+      background: transparent;
+      font: inherit;
+      color: var(--text);
+    }
+
+    .toolbar-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .stays-grid,
+    .itinerary-grid,
+    .transport-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+    }
+
+    .itinerary-card ul,
+    .transport-card ul {
+      padding-left: 18px;
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .faq-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .faq-item {
+      overflow: hidden;
+    }
+
+    .faq-trigger {
+      width: 100%;
+      background: transparent;
+      padding: 18px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      text-align: left;
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    .faq-content {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.24s ease;
+      color: var(--muted);
+      line-height: 1.65;
+      padding: 0 20px;
+    }
+
+    .faq-item.open .faq-content {
+      max-height: 220px;
+      padding: 0 20px 18px;
+    }
+
+    .footer {
+      padding: 32px 0 50px;
+      color: var(--muted);
+    }
+
+    .footer-card {
+      padding: 24px;
+      border-radius: var(--radius);
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.86);
+      box-shadow: var(--shadow);
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .prototype-note {
+      font-size: 0.95rem;
+      color: var(--muted);
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    @media (max-width: 1040px) {
+      .hero-grid,
+      .cards-grid,
+      .stays-grid,
+      .itinerary-grid,
+      .transport-grid,
+      .two-up,
+      .filters-bar {
+        grid-template-columns: 1fr;
+      }
+
+      .section-head {
+        align-items: start;
+        flex-direction: column;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .topbar-inner {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .nav-links {
+        justify-content: flex-start;
+      }
+
+      .hero-main,
+      .hero-side,
+      .section-card,
+      .activity-card,
+      .stay-card,
+      .itinerary-card,
+      .transport-card,
+      .footer-card {
+        padding: 18px;
+      }
+
+      .quick-facts {
+        grid-template-columns: 1fr;
+      }
+
+      h1 {
+        max-width: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <a class="brand" href="#home" aria-label="Tanitian home">
+        <span class="brand-mark">🌴</span>
+        <span>Tanitian</span>
+      </a>
+      <nav class="nav-links" aria-label="Primary">
+        <a href="#about">About</a>
+        <a href="#things-to-do">Things to Do</a>
+        <a href="#places-to-stay">Stay</a>
+        <a href="#getting-around">Transportation</a>
+        <a href="#faq">FAQ</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="home" class="container">
+    <section class="hero">
+      <div class="hero-grid">
+        <div class="hero-main">
+          <h1>Discover Taniti today</h1>
+          <div class="button-row">
+            <a class="button-primary button-link" href="#itineraries">Plan Your Trip</a>
+            <a class="button-secondary button-link" href="#things-to-do">Explore Activities</a>
+          </div>
+        </div>
+
+        <aside class="hero-side" aria-label="Trip summary">
+          <div class="quick-facts">
+            <div class="stat-card">
+              <div class="stat-label">Best for</div>
+              <div class="stat-value">Families & first-time visitors</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Typical stay</div>
+              <div class="stat-value">3 to 6 days</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Top transport</div>
+              <div class="stat-value">Rental car + shuttle</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Trip style</div>
+              <div class="stat-value">Relaxed, scenic, flexible</div>
+            </div>
+          </div>
+          <div class="transport-strip">
+           Air, water, and land vehicles available
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section id="about">
+      <div class="section-head">
+        <div>
+          <h2>About Taniti</h2>
+        </div>
+      </div>
+
+      <div class="two-up">
+        <article class="section-card">
+          <h3 style="margin-bottom:14px">Natural highlights</h3>
+          <div class="pill-list">
+            <span class="mini-chip">White-sand beaches</span>
+            <span class="mini-chip">Rainforest trails</span>
+            <span class="mini-chip">Active volcano views</span>
+            <span class="mini-chip">Yellow Leaf Bay</span>
+          </div>
+          <p class="card-copy" style="margin-top:16px">
+            Taniti blends easy family sightseeing with optional adventure. You can stay near the beach and still reach the rainforest, museums, and bayfront dining without overcomplicating the trip.
+          </p>
+        </article>
+
+        <article class="section-card">
+          <h3 style="margin-bottom:14px">Culture and practical travel info</h3>
+          <p class="card-copy">
+            English is commonly used in tourist areas. Many visitors combine beach time with short activity days. Most restaurants and shops are concentrated in Taniti City and the nearby resort corridor, making it easy to plan around one home base.
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <section id="things-to-do">
+      <div class="section-head">
+        <div>
+          <h2>Things to do</h2>
+        </div>
+        <div class="traveler-toggle" id="travelerToggle">
+          <button class="chip active" data-traveler="all">All travelers</button>
+          <button class="chip" data-traveler="family">Family</button>
+          <button class="chip" data-traveler="couples">Couples</button>
+          <button class="chip" data-traveler="adventure">Adventure</button>
+        </div>
+      </div>
+
+      <div class="cards-grid" id="activityGrid">
+        <article class="activity-card" data-travelers="family adventure">
+          <div class="card-top">
+            <div>
+              <div class="recommended">★ Recommended for first visits</div>
+              <h3 style="margin-top:12px">Rainforest Zip Tour</h3>
+            </div>
+            <div class="price">$65–$95</div>
+          </div>
+          <p class="card-copy">A guided canopy route with scenic views and moderate thrills. Great for older kids and groups who want one standout activity day.</p>
+          <div class="meta-row">
+            <span class="mini-chip">Rainforest</span>
+            <span class="mini-chip">Half day</span>
+            <span class="mini-chip">Guided</span>
+          </div>
+        </article>
+
+        <article class="activity-card" data-travelers="family couples">
+          <div class="card-top">
+            <div>
+              <div class="recommended">★ Recommended</div>
+              <h3 style="margin-top:12px">Yellow Leaf Bay Beach Day</h3>
+            </div>
+            <div class="price">$0–$25</div>
+          </div>
+          <p class="card-copy">Easy access swimming, snacks, and sunset views. Simple, flexible, and ideal for travelers who do not want a rigid schedule.</p>
+          <div class="meta-row">
+            <span class="mini-chip">Relaxed</span>
+            <span class="mini-chip">Low cost</span>
+            <span class="mini-chip">All ages</span>
+          </div>
+        </article>
+
+        <article class="activity-card" data-travelers="couples adventure">
+          <div class="card-top">
+            <div>
+              <h3>Volcano Lookout Tour</h3>
+            </div>
+            <div class="price">$40–$70</div>
+          </div>
+          <p class="card-copy">A scenic route to dramatic viewpoints with light guided interpretation. Works well as a flexible photo-focused outing.</p>
+          <div class="meta-row">
+            <span class="mini-chip">Scenic</span>
+            <span class="mini-chip">3 hours</span>
+            <span class="mini-chip">Shuttle option</span>
+          </div>
+        </article>
+
+        <article class="activity-card" data-travelers="family couples">
+          <div class="card-top">
+            <div>
+              <h3>Island History Museum</h3>
+            </div>
+            <div class="price">$12–$18</div>
+          </div>
+          <p class="card-copy">Indoor cultural stop near Taniti City. Useful for a lower-energy day or mixed-weather planning.</p>
+          <div class="meta-row">
+            <span class="mini-chip">Indoor</span>
+            <span class="mini-chip">1 to 2 hours</span>
+            <span class="mini-chip">Central city</span>
+          </div>
+        </article>
+
+        <article class="activity-card" data-travelers="adventure family">
+          <div class="card-top">
+            <div>
+              <h3>Snorkeling Reef Excursion</h3>
+            </div>
+            <div class="price">$45–$80</div>
+          </div>
+          <p class="card-copy">Boat-assisted reef access with rental gear included. A strong pick for active groups wanting a marine experience.</p>
+          <div class="meta-row">
+            <span class="mini-chip">Water activity</span>
+            <span class="mini-chip">Gear included</span>
+            <span class="mini-chip">Morning</span>
+          </div>
+        </article>
+
+        <article class="activity-card" data-travelers="couples family">
+          <div class="card-top">
+            <div>
+              <h3>Night Market & Dining Walk</h3>
+            </div>
+            <div class="price">$20–$60</div>
+          </div>
+          <p class="card-copy">Casual evening option with local food, gifts, and waterfront walking. Easy to combine with nearby lodging.</p>
+          <div class="meta-row">
+            <span class="mini-chip">Evening</span>
+            <span class="mini-chip">Food</span>
+            <span class="mini-chip">Walkable</span>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section id="itineraries">
+      <div class="section-head">
+        <div>
+          <h2>Suggested itineraries</h2>
+        </div>
+      </div>
+
+      <div class="itinerary-grid" id="itineraryGrid">
+        <article class="itinerary-card" data-travelers="family">
+          <div class="card-top">
+            <div>
+              <div class="recommended">★ Best match for the sample persona</div>
+              <h3 style="margin-top:12px">5-day family starter trip</h3>
+            </div>
+          </div>
+          <ul>
+            <li>Day 1: Beach check-in day + sunset dinner</li>
+            <li>Day 2: Museum in the morning + bayfront lunch</li>
+            <li>Day 3: Rainforest tour or zip line</li>
+            <li>Day 4: Free day with reef or market option</li>
+            <li>Day 5: Easy breakfast + departure buffer</li>
+          </ul>
+        </article>
+
+        <article class="itinerary-card" data-travelers="couples">
+          <div class="card-top">
+            <div>
+              <h3>Romantic long weekend</h3>
+            </div>
+          </div>
+          <ul>
+            <li>Day 1: Resort check-in + seaside dinner</li>
+            <li>Day 2: Volcano lookout + spa or beach lounge</li>
+            <li>Day 3: Snorkeling or sail + night market</li>
+            <li>Day 4: Relaxed breakfast + departure</li>
+          </ul>
+        </article>
+
+        <article class="itinerary-card" data-travelers="adventure">
+          <div class="card-top">
+            <div>
+              <h3>Adventure-focused escape</h3>
+            </div>
+          </div>
+          <ul>
+            <li>Day 1: Arrival + rental car pickup</li>
+            <li>Day 2: Zip line + rainforest trails</li>
+            <li>Day 3: Reef excursion</li>
+            <li>Day 4: Volcano route + scenic stops</li>
+            <li>Day 5: Flexible beach recovery day</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section id="places-to-stay">
+      <div class="section-head">
+        <div>
+          <h2>Places to stay</h2>
+        </div>
+      </div>
+
+      <div class="filters-bar">
+        <label class="search-box" aria-label="Search lodging">
+          <span>🔎</span>
+          <input id="staySearch" type="text" placeholder="Search lodging, location, or amenities" />
+        </label>
+        <div class="toolbar-group" id="stayFilters">
+          <button class="filter-button active" data-filter="all">All</button>
+          <button class="filter-button" data-filter="family">Family</button>
+          <button class="filter-button" data-filter="budget">Budget</button>
+          <button class="filter-button" data-filter="luxury">Resort</button>
+        </div>
+      </div>
+
+      <div class="stays-grid" id="stayGrid">
+        <article class="stay-card" data-tags="family budget city shuttle breakfast">
+          <div class="card-top">
+            <div>
+              <div class="recommended">★ Recommended</div>
+              <h3 style="margin-top:12px">Harbor Family Hotel</h3>
+            </div>
+            <div class="price">$$</div>
+          </div>
+          <p class="card-copy">Spacious rooms, shuttle access, and easy routes to the beach and museum district.</p>
+          <div class="meta-row">
+            <span class="mini-chip">Family</span>
+            <span class="mini-chip">Breakfast</span>
+            <span class="mini-chip">City access</span>
+          </div>
+        </article>
+
+        <article class="stay-card" data-tags="luxury resort couples beachfront spa">
+          <div class="card-top">
+            <div>
+              <h3>Yellow Bay Resort</h3>
+            </div>
+            <div class="price">$$$</div>
+          </div>
+          <p class="card-copy">Beachfront resort with dining, spa services, and strong sunset views for a higher-end stay.</p>
+          <div class="meta-row">
+            <span class="mini-chip">Resort</span>
+            <span class="mini-chip">Beachfront</span>
+            <span class="mini-chip">Couples</span>
+          </div>
+        </article>
+
+        <article class="stay-card" data-tags="budget family downtown walkable">
+          <div class="card-top">
+            <div>
+              <h3>Taniti City Inn</h3>
+            </div>
+            <div class="price">$</div>
+          </div>
+          <p class="card-copy">A practical lower-cost option with walkable dining and easier taxi access.</p>
+          <div class="meta-row">
+            <span class="mini-chip">Budget</span>
+            <span class="mini-chip">Walkable</span>
+            <span class="mini-chip">Downtown</span>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section id="getting-around">
+      <div class="section-head">
+        <div>
+          <h2>Getting around</h2>
+        </div>
+      </div>
+
+      <div class="transport-grid">
+        <article class="transport-card">
+          <h3>Arrival</h3>
+          <ul>
+            <li>Flights arrive through Taniti Airport</li>
+            <li>Cruise passengers can transfer into Taniti City</li>
+            <li>Most hotels can arrange pickup or shuttle guidance</li>
+          </ul>
+        </article>
+
+        <article class="transport-card">
+          <h3>Ground transportation</h3>
+          <ul>
+            <li>Rental cars work best for families and flexible itineraries</li>
+            <li>Taxis are common in Taniti City</li>
+            <li>Public buses run daily from 5 a.m. to 11 p.m.</li>
+          </ul>
+        </article>
+
+        <article class="transport-card">
+          <h3>Planning tip</h3>
+          <ul>
+            <li>Stay near the city if you want easier dining and museum access</li>
+            <li>Stay near the bay or resort zone if beach time is the priority</li>
+            <li>Choose a rental car for volcano and rainforest day trips</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section id="faq">
+      <div class="section-head">
+        <div>
+          <h2>Travel info / FAQ</h2>
+        </div>
+      </div>
+
+      <div class="faq-list">
+        <div class="faq-item open">
+          <button class="faq-trigger" aria-expanded="false">
+            <span>Is Taniti a good destination for first-time visitors?</span>
+            <span>＋</span>
+          </button>
+          <div class="faq-content">
+            Yes. Taniti works well for first-time visitors because the main attractions are easy to combine, there are clear hotel options, and you can choose either a relaxed beach trip or a more active itinerary.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-trigger" aria-expanded="false">
+            <span>Do I need a rental car?</span>
+            <span>＋</span>
+          </button>
+          <div class="faq-content">
+            Not always, but it helps a lot for families or travelers who want to visit the volcano, rainforest, and multiple beach areas without depending on fixed shuttle timing.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-trigger" aria-expanded="false">
+            <span>What is the easiest way to build a 5-day trip?</span>
+            <span>＋</span>
+          </button>
+          <div class="faq-content">
+            Start with one base hotel, choose one adventure day, one cultural or museum day, one flexible beach day, and keep arrival and departure days lighter. The suggested itineraries above do exactly that.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-trigger" aria-expanded="false">
+            <span>Are there options for different traveler types?</span>
+            <span>＋</span>
+          </button>
+          <div class="faq-content">
+            Yes. The activity and lodging sections include family, couples, and adventure-focused filtering so users can quickly narrow the interface to what matches their trip.
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer container">
+  </footer>
+
+  <script>
+    const travelerButtons = Array.from(document.querySelectorAll('#travelerToggle .chip'))
+    const activityCards = Array.from(document.querySelectorAll('#activityGrid .activity-card'))
+    const itineraryCards = Array.from(document.querySelectorAll('#itineraryGrid .itinerary-card'))
+
+    travelerButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        travelerButtons.forEach(btn => btn.classList.remove('active'))
+        button.classList.add('active')
+
+        const selected = button.dataset.traveler
+
+        activityCards.forEach(card => {
+          const travelers = card.dataset.travelers.split(' ')
+          const show = selected === 'all' || travelers.includes(selected)
+          card.classList.toggle('hidden', !show)
+        })
+
+        itineraryCards.forEach(card => {
+          const travelers = card.dataset.travelers.split(' ')
+          const show = selected === 'all' || travelers.includes(selected)
+          card.classList.toggle('hidden', !show)
+        })
+      })
+    })
+
+    const stayButtons = Array.from(document.querySelectorAll('#stayFilters .filter-button'))
+    const stayCards = Array.from(document.querySelectorAll('#stayGrid .stay-card'))
+    const staySearch = document.getElementById('staySearch')
+
+    let activeStayFilter = 'all'
+
+    function filterStays() {
+      const search = staySearch.value.trim().toLowerCase()
+
+      stayCards.forEach(card => {
+        const tags = card.dataset.tags.toLowerCase()
+        const text = card.textContent.toLowerCase()
+        const matchesFilter = activeStayFilter === 'all' || tags.includes(activeStayFilter)
+        const matchesSearch = !search || text.includes(search) || tags.includes(search)
+        card.classList.toggle('hidden', !(matchesFilter && matchesSearch))
+      })
+    }
+
+    stayButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        stayButtons.forEach(btn => btn.classList.remove('active'))
+        button.classList.add('active')
+        activeStayFilter = button.dataset.filter
+        filterStays()
+      })
+    })
+
+    staySearch.addEventListener('input', filterStays)
+
+    document.querySelectorAll('.faq-item').forEach(item => {
+      const trigger = item.querySelector('.faq-trigger')
+      trigger.addEventListener('click', () => {
+        const isOpen = item.classList.contains('open')
+        item.classList.toggle('open', !isOpen)
+        trigger.setAttribute('aria-expanded', String(!isOpen))
+      })
+    })
+
+    const navLinks = Array.from(document.querySelectorAll('.nav-links a'))
+    const sections = Array.from(document.querySelectorAll('main section'))
+
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return
+        navLinks.forEach(link => {
+          const active = link.getAttribute('href') === `#${entry.target.id}`
+          link.classList.toggle('active', active)
+        })
+      })
+    }, {
+      rootMargin: '-40% 0px -45% 0px',
+      threshold: 0
+    })
+
+    sections.forEach(section => observer.observe(section))
+  </script>
+</body>
+</html>
