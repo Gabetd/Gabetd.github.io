@@ -281,6 +281,28 @@
       scroll-margin-top: 96px;
     }
 
+    .page {
+      display: none;
+      min-height: calc(100vh - 155px);
+      animation: pageFade 0.18s ease;
+    }
+
+    .page.active {
+      display: block;
+    }
+
+    @keyframes pageFade {
+      from {
+        opacity: 0;
+        transform: translateY(6px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
     .section-head {
       display: flex;
       justify-content: space-between;
@@ -556,8 +578,10 @@
         <span>Tanitian</span>
       </a>
       <nav class="nav-links" aria-label="Primary">
+        <a href="#home" class="active" aria-current="page">Home</a>
         <a href="#about">About</a>
         <a href="#things-to-do">Things to Do</a>
+        <a href="#itineraries">Itineraries</a>
         <a href="#places-to-stay">Stay</a>
         <a href="#getting-around">Transportation</a>
         <a href="#faq">FAQ</a>
@@ -565,8 +589,8 @@
     </div>
   </header>
 
-  <main id="home" class="container">
-    <section class="hero">
+  <main class="container">
+    <section id="home" class="page hero active">
       <div class="hero-grid">
         <div class="hero-main">
           <h1>Discover Taniti today</h1>
@@ -602,7 +626,7 @@
       </div>
     </section>
 
-    <section id="about">
+    <section id="about" class="page">
       <div class="section-head">
         <div>
           <h2>About Taniti</h2>
@@ -632,7 +656,7 @@
       </div>
     </section>
 
-    <section id="things-to-do">
+    <section id="things-to-do" class="page">
       <div class="section-head">
         <div>
           <h2>Things to do</h2>
@@ -740,7 +764,7 @@
       </div>
     </section>
 
-    <section id="itineraries">
+    <section id="itineraries" class="page">
       <div class="section-head">
         <div>
           <h2>Suggested itineraries</h2>
@@ -825,7 +849,7 @@
       </div>
     </section>
 
-    <section id="places-to-stay">
+    <section id="places-to-stay" class="page">
       <div class="section-head">
         <div>
           <h2>Places to stay</h2>
@@ -894,7 +918,7 @@
       </div>
     </section>
 
-    <section id="getting-around">
+    <section id="getting-around" class="page">
       <div class="section-head">
         <div>
           <h2>Getting around</h2>
@@ -931,7 +955,7 @@
       </div>
     </section>
 
-    <section id="faq">
+    <section id="faq" class="page">
       <div class="section-head">
         <div>
           <h2>Travel info / FAQ</h2>
@@ -1050,22 +1074,51 @@
     })
 
     const navLinks = Array.from(document.querySelectorAll('.nav-links a'))
-    const sections = Array.from(document.querySelectorAll('main section'))
+    const pageLinks = Array.from(document.querySelectorAll('a[href^="#"]'))
+    const pages = Array.from(document.querySelectorAll('.page'))
+    const pageIds = pages.map(page => page.id)
 
-    const observer = new IntersectionObserver(entries => {
-      entries.forEach(entry => {
-        if (!entry.isIntersecting) return
-        navLinks.forEach(link => {
-          const active = link.getAttribute('href') === `#${entry.target.id}`
-          link.classList.toggle('active', active)
-        })
+    function getValidPageId(hash) {
+      const requestedId = hash.replace('#', '')
+      return pageIds.includes(requestedId) ? requestedId : 'home'
+    }
+
+    function showPage(pageId, options = {}) {
+      pages.forEach(page => {
+        page.classList.toggle('active', page.id === pageId)
       })
-    }, {
-      rootMargin: '-40% 0px -45% 0px',
-      threshold: 0
+
+      navLinks.forEach(link => {
+        const isActive = link.getAttribute('href') === `#${pageId}`
+        link.classList.toggle('active', isActive)
+
+        if (isActive) {
+          link.setAttribute('aria-current', 'page')
+        } else {
+          link.removeAttribute('aria-current')
+        }
+      })
+
+      if (!options.skipHash && window.location.hash !== `#${pageId}`) {
+        history.pushState(null, '', `#${pageId}`)
+      }
+
+      window.scrollTo({ top: 0, behavior: options.instant ? 'auto' : 'smooth' })
+    }
+
+    pageLinks.forEach(link => {
+      link.addEventListener('click', event => {
+        const pageId = getValidPageId(link.getAttribute('href'))
+        event.preventDefault()
+        showPage(pageId)
+      })
     })
 
-    sections.forEach(section => observer.observe(section))
+    window.addEventListener('popstate', () => {
+      showPage(getValidPageId(window.location.hash), { skipHash: true, instant: true })
+    })
+
+    showPage(getValidPageId(window.location.hash), { skipHash: true, instant: true })
   </script>
 </body>
 </html>
