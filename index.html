@@ -929,7 +929,135 @@ E4 G4 G4:2
 
 E4 D4 C4 D4 E4 E4 E4 E4
 D4 D4 E4 D4 C4:4`
-    }
+    },
+      {
+    name: 'Amazing Grace',
+    notes: `C4 F4 A4 F4
+A4 G4 F4 D4
+C4 F4 A4 F4
+A4 G4 F4:4
+
+A4 C5 A4 C5
+A4 G4 F4 D4
+C4 F4 A4 F4
+G4 F4:4`
+  },
+  {
+    name: 'Yankee Doodle',
+    notes: `C4 C4 D4 E4
+C4 E4 D4 G4
+C4 C4 D4 E4
+F4 E4 D4 C4
+
+G4 G4 A4 G4
+F4 E4 D4 C4
+C4 D4 E4 F4
+G4 C4:4`
+  },
+  {
+    name: 'This Old Man',
+    notes: `G4 G4 A4 B4
+D5 B4 G4 B4
+A4 A4 B4 C5
+E5 C5 A4 C5
+
+G4 G4 A4 B4
+D5 B4 G4 B4
+A4 B4 C5 A4
+G4:4`
+  },
+  {
+    name: 'Are You Sleeping? (Frère Jacques)',
+    notes: `C4 D4 E4 C4
+C4 D4 E4 C4
+
+E4 F4 G4:2
+E4 F4 G4:2
+
+G4 A4 G4 F4 E4 C4
+G4 A4 G4 F4 E4 C4
+
+C4 G3 C4:2
+C4 G3 C4:2`
+  },
+  {
+    name: 'Old MacDonald Had a Farm',
+    notes: `G4 G4 G4 D4 E4 E4 D4
+B4 B4 A4 A4 G4:2
+
+D4 G4 G4 G4 D4 E4 E4 D4
+B4 B4 A4 A4 G4:4`
+  },
+  {
+    name: 'Brahms` Lullaby',
+    notes: `G4 G4 D5 G4
+G4 D5 G4 D4
+
+G4 G4 D5 G4
+A4 G4 F#4:2
+
+D5 D5 A5 F#5
+D5 A4 G4:2
+
+G4 G4 D5 G4
+A4 G4 F#4:4`
+  },
+  {
+    name: 'Silent Night',
+    notes: `G4 A4 G4 E4
+G4 A4 G4 E4
+
+D5 D5 B4:2
+C5 C5 G4:2
+
+A4 A4 C5 B4 A4
+G4 A4 G4 E4
+
+A4 A4 C5 B4 A4
+G4 A4 G4 E4:4`
+  },
+  {
+    name: 'Camptown Races',
+    notes: `G4 G4 E4 G4
+A4 G4 E4 C4
+
+G4 G4 E4 G4
+A4 G4 E4 C4
+
+C4 D4 E4 F4
+G4 G4 G4:2
+
+A4 G4 E4 C4
+D4 C4:4`
+  },
+  {
+    name: 'When the Saints Go Marching In',
+    notes: `C4 E4 F4 G4
+C5 E4 F4 G4
+
+C5 E4 F4 G4
+E4 C4:2
+
+E4 E4 F4 G4
+A4 G4 F4 E4
+
+G4 E4 C4 D4
+C4:4`
+  },
+  {
+    name: 'Scarborough Fair',
+    notes: `E4 G4 A4 G4
+E4 D4 E4:2
+
+G4 A4 B4 A4
+G4 E4:2
+
+E4 G4 A4 G4
+E4 D4 E4:2
+
+G4 E4 D4 C4
+D4:4`
+  }
 ];
 const DEFAULT_SHEET_MUSIC = SHEET_MUSIC_SONGS[0]?.notes ?? 'C4 D4 E4 F4 | G4:2 G4:2 | A4 B4 C5:2 R:2';
 const DEFAULT_SHEET_MUSIC_DELAY_SECONDS = 3;
@@ -970,6 +1098,7 @@ const waveformCanvas = requireElement('waveform');
 const clearStaffButton = requireElement('clear-staff');
 const staffContext = staffCanvas.getContext('2d');
 const waveformContext = waveformCanvas.getContext('2d');
+const NOTE_PLACEMENT_INTERVAL_MS = 100
 let audioContext = null;
 let analyser = null;
 let mediaStream = null;
@@ -990,6 +1119,17 @@ let sheetMusicItems = [];
 let nextStaffNoteId = 1;
 let nextSheetMusicItemId = 1;
 let staffStartedAt = performance.now();
+let lastNotePlacementTime = 0
+function canPlaceNote() {
+  const now = performance.now()
+
+  if (now - lastNotePlacementTime < NOTE_PLACEMENT_INTERVAL_MS) {
+    return false
+  }
+
+  lastNotePlacementTime = now
+  return true
+}
 function requireElement(id) {
     const element = document.getElementById(id);
     if (!element) {
