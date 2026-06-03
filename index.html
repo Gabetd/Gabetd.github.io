@@ -859,41 +859,57 @@ const SCALES = {
 const DEFAULT_INPUT_VALUE = '__default__';
 const STAFF_PIXELS_PER_BEAT = 92;
 const SHEET_MUSIC_SONGS = [
-    {
-        name: 'Twinkle Twinkle Little Star',
-        notes: `C4 C4 G4 G4 A4 A4 G4:2
+  {
+    name: 'Twinkle Twinkle Little Star',
+    notes: `C4 C4 G4 G4 A4 A4 G4:2
 F4 F4 E4 E4 D4 D4 C4:2
 G4 G4 F4 F4 E4 E4 D4:2
 G4 G4 F4 F4 E4 E4 D4:2
 C4 C4 G4 G4 A4 A4 G4:2
-F4 F4 E4 E4 D4 D4 C4:2`
-    },
-    {
-        name: 'Hot Cross Buns',
-        notes: `E4 D4 C4:2
+F4 F4 E4 E4 D4 D4 C4:4`
+  },
+  {
+    name: 'Hot Cross Buns',
+    notes: `E4 D4 C4:2
 E4 D4 C4:2
 C4 C4 C4 C4
 D4 D4 D4 D4
-E4 D4 C4:2`
-    },
-    {
-        name: 'Row, Row, Row Your Boat',
-        notes: `C4 C4 C4 D4 E4:2
+E4 D4 C4:4
+
+E4 D4 C4:2
+E4 D4 C4:2
+C4 C4 D4 D4
+E4 D4 C4:4`
+  },
+  {
+    name: 'Row, Row, Row Your Boat',
+    notes: `C4 C4 C4 D4 E4:2
+E4 D4 E4 F4 G4:4
+C5 C5 C5 G4 G4 G4
+E4 E4 E4 C4 C4 C4
+G4 F4 E4 D4 C4:4
+
+C4 C4 C4 D4 E4:2
 E4 D4 E4 F4 G4:4
 C5 C5 C5 G4 G4 G4
 E4 E4 E4 C4 C4 C4
 G4 F4 E4 D4 C4:4`
-    },
-    {
-        name: 'London Bridge',
-        notes: `G4 A4 G4 F4 E4 F4 G4:2
+  },
+  {
+    name: 'London Bridge',
+    notes: `G4 A4 G4 F4 E4 F4 G4:2
+D4 E4 F4 E4 F4 G4:2
+G4 A4 G4 F4 E4 F4 G4:2
+D4 G4 E4 C4:4
+
+G4 A4 G4 F4 E4 F4 G4:2
 D4 E4 F4 E4 F4 G4:2
 G4 A4 G4 F4 E4 F4 G4:2
 D4 G4 E4 C4:4`
-    },
-    {
-        name: 'Ode to Joy',
-        notes: `E4 E4 F4 G4
+  },
+  {
+    name: 'Ode to Joy',
+    notes: `E4 E4 F4 G4
 G4 F4 E4 D4
 C4 C4 D4 E4
 E4 D4 D4:2
@@ -901,38 +917,90 @@ E4 D4 D4:2
 E4 E4 F4 G4
 G4 F4 E4 D4
 C4 C4 D4 E4
-D4 C4 C4:2`
-    },
-    {
-        name: 'Jingle Bells (Chorus)',
-        notes: `E4 E4 E4:2
+D4 C4 C4:2
+
+D4 D4 E4 C4
+D4 E4 F4 E4 C4
+D4 E4 F4 E4 D4
+C4 D4 G3:2
+
+E4 E4 F4 G4
+G4 F4 E4 D4
+C4 C4 D4 E4
+D4 C4 C4:4`
+  },
+  {
+    name: 'Jingle Bells',
+    notes: `G4 E4 D4 C4
+G4:2 G4:2 G4:2
+G4 E4 D4 C4
+A4:4
+
+A4 F4 E4 D4
+B4:2 B4:2 B4:2
+G4 G4 F4 D4
+E4:4
+
+E4 E4 E4:2
 E4 E4 E4:2
 E4 G4 C4 D4 E4:4
 
 F4 F4 F4 F4
 F4 E4 E4 E4
 E4 D4 D4 E4
-D4 G4:4`
-    },
-    {
-        name: 'Happy Birthday',
-        notes: `C4 C4 D4 C4 F4 E4:2
+D4 G4:4
+
+E4 E4 E4:2
+E4 E4 E4:2
+E4 G4 C4 D4 E4:4
+
+F4 F4 F4 F4
+F4 E4 E4 E4
+G4 G4 F4 D4
+C4:4`
+  },
+  {
+    name: 'Happy Birthday',
+    notes: `C4 C4 D4 C4 F4 E4:2
 C4 C4 D4 C4 G4 F4:2
 C4 C4 C5 A4 F4 E4 D4:2
 A#4 A#4 A4 F4 G4 F4:4`
-    },
-    {
-        name: 'Mary Had a Little Lamb',
-        notes: `E4 D4 C4 D4 E4 E4 E4:2
+  },
+  {
+    name: 'Mary Had a Little Lamb',
+    notes: `E4 D4 C4 D4
+E4 E4 E4:2
 D4 D4 D4:2
 E4 G4 G4:2
 
-E4 D4 C4 D4 E4 E4 E4 E4
-D4 D4 E4 D4 C4:4`
-    },
-      {
+E4 D4 C4 D4
+E4 E4 E4 E4
+D4 D4 E4 D4
+C4:4
+
+E4 D4 C4 D4
+E4 E4 E4:2
+D4 D4 D4:2
+E4 G4 G4:2
+
+E4 D4 C4 D4
+E4 E4 E4 E4
+D4 D4 E4 D4
+C4:4`
+  },
+  {
     name: 'Amazing Grace',
     notes: `C4 F4 A4 F4
+A4 G4 F4 D4
+C4 F4 A4 F4
+A4 G4 F4:4
+
+A4 C5 A4 C5
+A4 G4 F4 D4
+C4 F4 A4 F4
+G4 F4:4
+
+C4 F4 A4 F4
 A4 G4 F4 D4
 C4 F4 A4 F4
 A4 G4 F4:4
@@ -952,11 +1020,31 @@ F4 E4 D4 C4
 G4 G4 A4 G4
 F4 E4 D4 C4
 C4 D4 E4 F4
+G4 C4:4
+
+C4 C4 D4 E4
+C4 E4 D4 G4
+C4 C4 D4 E4
+F4 E4 D4 C4
+
+G4 G4 A4 G4
+F4 E4 D4 C4
+C4 D4 E4 F4
 G4 C4:4`
   },
   {
     name: 'This Old Man',
     notes: `G4 G4 A4 B4
+D5 B4 G4 B4
+A4 A4 B4 C5
+E5 C5 A4 C5
+
+G4 G4 A4 B4
+D5 B4 G4 B4
+A4 B4 C5 A4
+G4:4
+
+G4 G4 A4 B4
 D5 B4 G4 B4
 A4 A4 B4 C5
 E5 C5 A4 C5
@@ -978,7 +1066,7 @@ G4 A4 G4 F4 E4 C4
 G4 A4 G4 F4 E4 C4
 
 C4 G3 C4:2
-C4 G3 C4:2`
+C4 G3 C4:4`
   },
   {
     name: 'Old MacDonald Had a Farm',
@@ -986,11 +1074,29 @@ C4 G3 C4:2`
 B4 B4 A4 A4 G4:2
 
 D4 G4 G4 G4 D4 E4 E4 D4
+B4 B4 A4 A4 G4:4
+
+D4 D4 G4 G4 G4
+D4 D4 G4 G4 G4
+G4 G4 G4 G4 G4 G4
+G4 G4 G4 D4 E4 E4 D4
 B4 B4 A4 A4 G4:4`
   },
   {
-    name: 'Brahms` Lullaby',
+    name: "Brahms' Lullaby",
     notes: `G4 G4 D5 G4
+G4 D5 G4 D4
+
+G4 G4 D5 G4
+A4 G4 F#4:2
+
+D5 D5 A5 F#5
+D5 A4 G4:2
+
+G4 G4 D5 G4
+A4 G4 F#4:4
+
+G4 G4 D5 G4
 G4 D5 G4 D4
 
 G4 G4 D5 G4
@@ -1014,11 +1120,29 @@ A4 A4 C5 B4 A4
 G4 A4 G4 E4
 
 A4 A4 C5 B4 A4
-G4 A4 G4 E4:4`
+G4 A4 G4 E4
+
+D5 D5 F5 D5 B4
+C5 E5:2
+
+C5 G4 E4 G4 F4 D4
+C4:4`
   },
   {
     name: 'Camptown Races',
     notes: `G4 G4 E4 G4
+A4 G4 E4 C4
+
+G4 G4 E4 G4
+A4 G4 E4 C4
+
+C4 D4 E4 F4
+G4 G4 G4:2
+
+A4 G4 E4 C4
+D4 C4:4
+
+G4 G4 E4 G4
 A4 G4 E4 C4
 
 G4 G4 E4 G4
@@ -1042,6 +1166,18 @@ E4 E4 F4 G4
 A4 G4 F4 E4
 
 G4 E4 C4 D4
+C4:4
+
+C4 E4 F4 G4
+C5 E4 F4 G4
+
+C5 E4 F4 G4
+E4 C4:2
+
+E4 E4 F4 G4
+A4 G4 F4 E4
+
+G4 E4 C4 D4
 C4:4`
   },
   {
@@ -1056,7 +1192,525 @@ E4 G4 A4 G4
 E4 D4 E4:2
 
 G4 E4 D4 C4
-D4:4`
+D4:4
+
+E4 G4 A4 G4
+E4 D4 E4:2
+
+G4 A4 B4 A4
+G4 E4:2
+
+B4 C5 B4 A4
+G4 E4 D4 C4
+D4 E4:4`
+  },
+  {
+    name: 'Baa Baa Black Sheep',
+    notes: `C4 C4 G4 G4
+A4 A4 G4:2
+
+F4 F4 E4 E4
+D4 D4 C4:2
+
+G4 G4 F4 F4
+E4 E4 D4:2
+
+G4 G4 F4 F4
+E4 E4 D4:2
+
+C4 C4 G4 G4
+A4 A4 G4:2
+
+F4 F4 E4 E4
+D4 D4 C4:4`
+  },
+  {
+    name: 'Alphabet Song',
+    notes: `C4 C4 G4 G4
+A4 A4 G4:2
+
+F4 F4 E4 E4
+D4 D4 C4:2
+
+G4 G4 F4 F4
+E4 E4 D4:2
+
+G4 G4 F4 F4
+E4 E4 D4:2
+
+C4 C4 G4 G4
+A4 A4 G4:2
+
+F4 F4 E4 E4
+D4 D4 C4:4`
+  },
+  {
+    name: 'Pop Goes the Weasel',
+    notes: `C4 C4 D4 D4
+E4 G4 E4 C4
+
+C4 C4 D4 D4
+E4 C4:2
+
+C4 C4 D4 D4
+E4 G4 E4 C4
+
+A4 D4 F4 E4
+C4:4
+
+C4 C4 D4 D4
+E4 G4 E4 C4
+
+C4 C4 D4 D4
+E4 C4:2
+
+C4 C4 D4 D4
+E4 G4 E4 C4
+
+A4 D4 F4 E4
+C4:4`
+  },
+  {
+    name: 'The Muffin Man',
+    notes: `G4 A4 G4 F4
+E4 F4 G4:2
+
+D4 E4 F4 E4
+F4 G4:2
+
+G4 A4 G4 F4
+E4 F4 G4:2
+
+D4 G4 E4 C4:4
+
+G4 A4 G4 F4
+E4 F4 G4:2
+
+D4 E4 F4 E4
+F4 G4:2
+
+G4 A4 G4 F4
+E4 F4 G4:2
+
+D4 G4 E4 C4:4`
+  },
+  {
+    name: 'The Farmer in the Dell',
+    notes: `C4 C4 C4 G4
+A4 A4 G4:2
+
+E4 E4 D4 D4
+C4:4
+
+G4 G4 F4 F4
+E4 E4 D4:2
+
+G4 G4 F4 F4
+E4 E4 D4:2
+
+C4 C4 C4 G4
+A4 A4 G4:2
+
+E4 E4 D4 D4
+C4:4`
+  },
+  {
+    name: 'Hush Little Baby',
+    notes: `G4 G4 A4 B4
+D5 B4 A4 G4
+
+A4 B4 C5 B4
+A4 G4:2
+
+G4 G4 A4 B4
+D5 B4 A4 G4
+
+A4 B4 C5 B4
+A4 G4:4
+
+D5 D5 B4 G4
+A4 B4 C5 B4
+
+A4 G4 A4 B4
+D5 B4 A4 G4:4`
+  },
+  {
+    name: 'For He’s a Jolly Good Fellow',
+    notes: `G4 G4 G4 G4
+F4 E4 D4:2
+
+E4 F4 E4 D4
+C4 D4 E4:2
+
+G4 G4 G4 G4
+F4 E4 D4:2
+
+E4 F4 E4 D4
+C4:4
+
+D4 D4 E4 F4
+G4 G4 G4:2
+
+A4 A4 G4 F4
+E4 D4 C4:2
+
+G4 G4 G4 G4
+F4 E4 D4:2
+
+E4 F4 E4 D4
+C4:4`
+  },
+  {
+    name: 'Auld Lang Syne',
+    notes: `C4 F4 E4 F4
+A4 G4 F4 G4
+
+A4 F4 A4 C5
+D5 C5 A4:2
+
+C5 A4 F4 G4
+A4 F4 A4 C5
+
+D5 C5 A4 G4
+F4:4
+
+C4 F4 E4 F4
+A4 G4 F4 G4
+
+A4 F4 A4 C5
+D5 C5 A4:2
+
+C5 A4 F4 G4
+A4 F4 A4 C5
+
+D5 C5 A4 G4
+F4:4`
+  },
+  {
+    name: 'We Wish You a Merry Christmas',
+    notes: `G4 C5 C5 D5
+C5 B4 A4 A4
+
+A4 D5 D5 E5
+D5 C5 B4 G4
+
+G4 E5 E5 F5
+E5 D5 C5 A4
+
+G4 G4 A4 D5
+B4 C5:4
+
+G4 C5 C5 C5
+B4 B4 C5 B4
+
+A4 G4 D5 E5
+D5 D5 C5:4`
+  },
+  {
+    name: 'Deck the Halls',
+    notes: `G4 F4 E4 D4
+C4 D4 E4 C4
+
+D4 E4 F4 D4
+E4 F4 G4:2
+
+G4 F4 E4 D4
+C4 D4 E4 C4
+
+A4 A4 A4 A4
+G4 F4 E4 D4
+C4:4
+
+G4 F4 E4 D4
+C4 D4 E4 C4
+
+D4 E4 F4 D4
+E4 F4 G4:2
+
+G4 F4 E4 D4
+C4 D4 E4 C4
+
+A4 A4 A4 A4
+G4 F4 E4 D4
+C4:4`
+  },
+  {
+    name: 'Joy to the World',
+    notes: `C5 B4 A4 G4
+F4 E4 D4 C4
+
+G4 A4 A4 B4
+B4 C5:2
+
+C5 C5 B4 A4
+G4 G4 F4 E4
+
+C5 C5 B4 A4
+G4 G4 F4 E4
+
+E4 E4 E4 E4
+E4 F4 G4:2
+
+F4 E4 D4 D4
+D4 E4 F4:2
+
+E4 D4 C4 G4
+A4 B4 C5:4`
+  },
+  {
+    name: 'Good King Wenceslas',
+    notes: `G4 G4 G4 A4
+G4 G4 D4:2
+
+E4 D4 E4 F4
+G4 G4 G4:2
+
+G4 G4 G4 A4
+G4 G4 D4:2
+
+E4 D4 E4 F4
+G4:4
+
+D5 C5 B4 A4
+G4 G4 D4:2
+
+E4 D4 E4 F4
+G4 G4 G4:2
+
+D5 C5 B4 A4
+G4 G4 D4:2
+
+E4 D4 E4 F4
+G4:4`
+  },
+  {
+    name: 'Greensleeves',
+    notes: `E4 G4 A4 B4
+C5 B4 A4 F#4
+
+D4 E4 F#4 G4
+A4 G4 F#4 E4
+
+E4 G4 A4 B4
+C5 B4 A4 F#4
+
+D4 E4 F#4 G4
+A4 G4 E4:4
+
+D5 D5 C5 B4
+A4 F#4 D4 E4
+
+F#4 G4 A4 B4
+A4 G4 F#4 E4
+
+E4 G4 A4 B4
+C5 B4 A4 F#4
+
+D4 E4 F#4 G4
+A4 G4 E4:4`
+  },
+  {
+    name: 'Aura Lee',
+    notes: `C4 E4 G4 E4
+D4 C4 D4 E4
+
+F4 E4 D4 C4
+D4 G3:2
+
+C4 E4 G4 E4
+D4 C4 D4 E4
+
+F4 E4 D4 C4
+C4:4
+
+G4 G4 A4 G4
+F4 E4 D4 E4
+
+F4 E4 D4 C4
+D4 G3:2
+
+C4 E4 G4 E4
+D4 C4 D4 E4
+
+F4 E4 D4 C4
+C4:4`
+  },
+  {
+    name: 'My Bonnie Lies Over the Ocean',
+    notes: `C4 A4 G4 F4
+G4 F4 D4:2
+
+C4 A4 G4 F4
+G4 F4:4
+
+C4 A4 G4 F4
+G4 A4 G4 F4
+
+D4 C4 D4 F4
+E4 D4 C4:4
+
+C4 A4 G4 F4
+G4 F4 D4:2
+
+C4 A4 G4 F4
+G4 F4:4
+
+C4 A4 G4 F4
+G4 A4 G4 F4
+
+D4 C4 D4 F4
+E4 D4 C4:4`
+  },
+  {
+    name: 'Oh! Susanna',
+    notes: `C4 D4 E4 G4
+G4 A4 G4 E4
+
+C4 D4 E4 E4
+D4 C4 D4:2
+
+C4 D4 E4 G4
+G4 A4 G4 E4
+
+C4 D4 E4 E4
+D4 D4 C4:4
+
+F4 F4 A4 A4
+G4 E4 C4 D4
+
+E4 E4 G4 G4
+F4 D4:2
+
+C4 D4 E4 G4
+G4 A4 G4 E4
+
+C4 D4 E4 E4
+D4 D4 C4:4`
+  },
+  {
+    name: 'Turkey in the Straw',
+    notes: `D4 E4 F#4 G4
+A4 A4 A4:2
+
+B4 A4 G4 F#4
+E4 E4 E4:2
+
+D4 E4 F#4 G4
+A4 A4 A4:2
+
+B4 A4 G4 F#4
+E4 D4 D4:4
+
+A4 B4 A4 G4
+F#4 G4 A4:2
+
+B4 A4 G4 F#4
+E4 E4 E4:2
+
+D4 E4 F#4 G4
+A4 A4 A4:2
+
+B4 A4 G4 F#4
+E4 D4 D4:4`
+  },
+  {
+    name: 'Alouette',
+    notes: `G4 G4 A4 B4
+C5 C5 B4 A4
+
+G4 G4 A4 B4
+C5 B4 A4 G4
+
+D5 D5 C5 B4
+A4 A4 B4 C5
+
+B4 A4 G4 F#4
+G4:4
+
+G4 G4 A4 B4
+C5 C5 B4 A4
+
+G4 G4 A4 B4
+C5 B4 A4 G4
+
+D5 D5 C5 B4
+A4 A4 B4 C5
+
+B4 A4 G4 F#4
+G4:4`
+  },
+  {
+    name: 'La Cucaracha',
+    notes: `C4 C4 C4 F4
+A4:2 C4 C4 C4 F4
+A4:2
+
+F4 F4 E4 E4
+D4 D4 C4:2
+
+C4 C4 C4 E4
+G4:2 C4 C4 C4 E4
+G4:2
+
+C5 D5 C5 B4
+A4 G4 F4:4
+
+C4 C4 C4 F4
+A4:2 C4 C4 C4 F4
+A4:2
+
+F4 F4 E4 E4
+D4 D4 C4:2
+
+C4 C4 C4 E4
+G4:2 C4 C4 C4 E4
+G4:2
+
+C5 D5 C5 B4
+A4 G4 F4:4`
+  },
+  {
+    name: 'Sakura Sakura',
+    notes: `A4 A4 B4:2
+A4 A4 B4:2
+
+A4 B4 C5 B4
+A4 B4 A4 F4
+
+E4 C4 E4 F4
+E4 E4 C4:2
+
+A4 B4 C5 B4
+A4 B4 A4 F4
+
+E4 C4 E4 F4
+E4 E4 C4:4`
+  },
+  {
+    name: 'Lightly Row',
+    notes: `G4 E4 E4:2
+F4 D4 D4:2
+
+C4 D4 E4 F4
+G4 G4 G4:2
+
+G4 E4 E4:2
+F4 D4 D4:2
+
+C4 E4 G4 G4
+C4:4
+
+D4 D4 D4 D4
+D4 E4 F4:2
+
+E4 E4 E4 E4
+E4 F4 G4:2
+
+G4 E4 E4:2
+F4 D4 D4:2
+
+C4 E4 G4 G4
+C4:4`
   }
 ];
 const DEFAULT_SHEET_MUSIC = SHEET_MUSIC_SONGS[0]?.notes ?? 'C4 D4 E4 F4 | G4:2 G4:2 | A4 B4 C5:2 R:2';
