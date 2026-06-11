@@ -241,7 +241,7 @@ h2 {
 
 .metrics {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px;
   margin-bottom: 26px;
 }
@@ -621,8 +621,13 @@ canvas + * {
                   <strong id="target-frequency">-- Hz</strong>
                 </div>
                 <div>
-                  <span class="metric-label">Offset</span>
-                  <strong id="cents">-- cents</strong>
+                    <span class="metric-label">Offset</span>
+                    <strong id="cents">-- cents</strong>
+                </div>
+
+                <div>
+                    <span class="metric-label">Score</span>
+                    <strong id="score-display">--</strong>
                 </div>
               </div>
 
@@ -694,12 +699,17 @@ canvas + * {
               <h2>Sheet music song</h2>
 
               <label>
+                Difficulty
+                <select id="sheet-music-difficulty-select"></select>
+              </label>
+
+              <label>
                 Preset song
                 <select id="sheet-music-song-select"></select>
               </label>
 
               <p class="helper-text upload-helper">
-                Choose a preset song, or edit the loaded notes below. Use :beats for longer notes.
+                Choose a difficulty and preset song, or edit the loaded notes below. Presets set a default BPM, but you can still change BPM manually.
               </p>
 
               <label>
@@ -749,9 +759,12 @@ canvas + * {
                 <p id="sheet-music-playback-status" class="section-copy sheet-music-playback-status">
                   Moving staff is playing. Microphone listening is unchanged.
                 </p>
+
               </div>
               <div class="staff-action-row">
                 <button id="toggle-staff-movement" class="secondary-button" type="button" aria-pressed="true">Pause staff</button>
+                <button id="rewind-staff-1" class="secondary-button" type="button">Back 1 second</button>
+                <button id="foreward-staff-5" class="secondary-button" type="button">Foreward 5 seconds</button>
                 <button id="clear-staff" class="secondary-button" type="button">Clear played notes</button>
               </div>
             </div>
@@ -858,859 +871,1273 @@ const SCALES = {
 };
 const DEFAULT_INPUT_VALUE = '__default__';
 const STAFF_PIXELS_PER_BEAT = 92;
+const SHEET_MUSIC_DIFFICULTIES = [
+  { value: 'beginner', label: 'Beginner' },
+  { value: 'easy', label: 'Easy' },
+  { value: 'intermediate', label: 'Intermediate' },
+  { value: 'hard', label: 'Hard' }
+];
 const SHEET_MUSIC_SONGS = [
-  {
-    name: 'Twinkle Twinkle Little Star',
-    notes: `C4 C4 G4 G4 A4 A4 G4:2
-F4 F4 E4 E4 D4 D4 C4:2
-G4 G4 F4 F4 E4 E4 D4:2
-G4 G4 F4 F4 E4 E4 D4:2
-C4 C4 G4 G4 A4 A4 G4:2
-F4 F4 E4 E4 D4 D4 C4:4`
-  },
+    {
+  name: 'Random Beginner Violin Walk',
+  difficulty: 'easy',
+  bpm: 15,
+  notes: `G4 B3 C4 G5
+C4 B4 C5 D4
+A5 E5 F5 D4
+B3 D5 E4 A3
+A5 B4 F5 B3
+G3 E5 A4 C5
+G3 E5 G5 G4
+F5 B3 G5 C4
+D4 D5 G4 F4
+B4 A3 C4 A4
+D5 E4 A5 G5
+B3 E5 C5 A3
+D5 E4 D4 E5
+F4 A4 A5 B4
+A3 E5 F5 F5
+E4 F5 C5 A4
+B4 B3 G5 C5
+E5 G4 C4 E4
+B4 G4 A3 A3
+D5 A5 B3 C4
+E4 B3 D4 B3
+G4 B4 B4 G3
+B3 B4 F4 A4
+A5 F4 G3 A3
+C5 B4 D5 C4
+A3 D4 D4 D4
+F4 F5 F4 C5
+E4 F5 G5 F5
+D5 F4 B3 G4
+G5 F5 D4 G3
+F4 C5 G3 A4
+G3 B4 C4 E4
+E4 A4 A5 G4
+A5 G5 G3 F4
+A4 F4 E5 G4
+G3 D4 D5 E4
+B3 D5 F5 C5
+C5 E5 G4 D4
+F4 A3 F5 G5
+G3 C4 D4 E5
+A4 A5 F4 B3
+A5 E4 B4 B4
+G4 F4 G3 D5
+B3 A4 D5 E4
+D4 G5 C5 G5
+D4 E5 G3 F4
+A3 A4 G4 C5
+D5 F5 C5 E5
+C4 B4 G5 F4
+F5 F4 E5 C4`
+},
+{
+  name: 'Random Beginner Violin String 1',
+  difficulty: 'beginner',
+  bpm: 15,
+  notes: `
+G3 C4 A3 D4
+B3 G3 D4 A3
+D4 G3 C4 A3
+D4 B3 G3 B3
+D4 A3 C4 B3
+G3 C4 A3 D4
+B3 G3 D4 G3
+C4 A3 D4 B3
+G3 B3 D4 A3
+C4 A3 D4 B3
+G3 D4 G3 C4
+A3 D4 B3 G3
+B3 D4 A3 C4
+A3 D4 B3 G3
+D4 G3 C4 A3
+D4 B3 G3 B3
+D4 A3 C4 A3
+D4 B3 G3 B3
+D4 A3 C4 A3
+D4 B3 G3 G3
+B3 D4 C4 A3
+G3 D4 C4 G3
+C4 A3 D4 B3
+G3 D4 A3 D4
+G3 C4 A3 D4
+B3 G3 B3 D4
+A3 C4 B3 G3
+C4 A3 D4 B3
+G3 D4 G3 C4
+A3 D4 B3 G3
+B3 D4 A3 C4
+A3 D4 B3 G3
+D4 G3 C4 A3
+D4 B3 G3 B3
+D4 A3 C4 A3
+D4 B3 G3 B3
+D4 A3 C4 A3
+D4 B3 G3 G3
+B3 D4 C4 A3
+G3 D4 C4 G3
+C4 A3 D4 B3
+G3 D4 A3 D4
+G3 C4 A3 D4
+B3 G3 B3 D4
+A3 C4 B3 G3
+C4 A3 D4 B3
+G3 D4 G3 C4
+A3 D4 B3 G3
+B3 D4 A3 C4
+A3 D4 B3 G3
+D4 G3 C4 A3
+D4 B3 G3 B3
+D4 A3 C4 A3
+D4 B3 G3 B3
+D4 A3 C4 A3
+D4 B3 G3 G3
+B3 D4 C4 A3
+G3 D4 C4 G3
+C4 A3 D4 B3
+G3 D4 A3 D4
+G3 C4 A3 D4
+B3 G3 B3 D4
+A3 C4 B3 G3
+C4 A3 D4 B3
+G3 D4 G3 C4
+A3 D4 B3 G3
+B3 D4 A3 C4
+A3 D4 B3 G3
+D4 G3 C4 A3
+D4 B3 G3 B3
+D4 A3 C4 A3
+D4 B3 G3 B3
+D4 A3 C4 A3
+D4 B3 G3 G3
+B3 D4 C4 A3
+G3 D4 C4 G3
+C4 A3 D4 B3
+G3 D4 A3 D4
+G3 C4 A3 D4
+B3 G3 B3 D4
+A3 C4 B3 G3
+C4 A3 D4 B3
+G3 D4 G3 C4
+A3 D4 B3 G3
+B3 D4 A3 C4
+A3 D4 B3 G3
+D4 G3 C4 A3
+D4 B3 G3 B3
+D4 A3 C4 A3
+D4 B3 G3 B3
+D4 A3 C4 A3
+D4 B3 G3 G3
+B3 D4 C4 A3
+G3 D4 C4 G3
+C4 A3 D4 B3
+G3 D4 A3 D4
+G3 C4 A3 D4
+B3 G3 B3 D4
+A3 C4 B3 G3
+C4 A3 D4 B3
+G3 D4 G3 C4
+A3 D4 B3 G3
+B3 D4 A3 C4
+A3 D4 B3 G3
+D4 G3 C4 A3
+D4 B3 G3 B3
+D4 A3 C4 A3
+D4 B3 G3 B3
+D4 A3 C4 A3
+D4 B3 G3 G3
+B3 D4 C4 A3
+G3 D4 C4
+`
+},
+{
+  name: 'Random Beginner Violin String 2',
+  difficulty: 'beginner',
+  bpm: 15,
+  notes: `
+D4 G4 E4 A4
+F#4 D4 A4 E4
+F#4 A4 E4 G4
+G4 F#4 D4 G4
+E4 A4 F#4 D4
+F#4 A4 E4 G4
+F#4 A4 E4 G4
+A4 D4 G4 E4
+E4 A4 F#4 D4
+F#4 A4 E4 G4
+A4 D4 G4 E4
+F#4 A4 E4 G4
+G4 F#4 D4 G4
+E4 A4 F#4 D4
+F#4 A4 E4 G4
+F#4 A4 E4 G4
+A4 D4 G4 E4
+E4 A4 F#4 D4
+G4 F#4 D4 G4
+E4 A4 F#4 D4
+A4 D4 G4 E4
+F#4 A4 E4 G4
+F#4 A4 E4 G4
+D4 F#4 A4 G4
+E4 D4 E4 G4
+D4 G4 E4 A4
+F#4 D4 A4 E4
+F#4 A4 E4 G4
+G4 F#4 D4 G4
+E4 A4 F#4 D4
+F#4 A4 E4 G4
+F#4 A4 E4 G4
+A4 D4 G4 E4
+E4 A4 F#4 D4
+F#4 A4 E4 G4
+A4 D4 G4 E4
+F#4 A4 E4 G4
+G4 F#4 D4 G4
+E4 A4 F#4 D4
+F#4 A4 E4 G4
+F#4 A4 E4 G4
+A4 D4 G4 E4
+E4 A4 F#4 D4
+G4 F#4 D4 G4
+E4 A4 F#4 D4
+A4 D4 G4 E4
+F#4 A4 E4 G4
+F#4 A4 E4 G4
+D4 F#4 A4 G4
+E4 D4 E4 G4
+D4 G4 E4 A4
+F#4 D4 A4 E4
+F#4 A4 E4 G4
+G4 F#4 D4 G4
+E4 A4 F#4 D4
+F#4 A4 E4 G4
+F#4 A4 E4 G4
+A4 D4 G4 E4
+E4 A4 F#4 D4
+F#4 A4 E4 G4
+A4 D4 G4 E4
+F#4 A4 E4 G4
+G4 F#4 D4 G4
+E4 A4 F#4 D4
+F#4 A4 E4 G4
+F#4 A4 E4 G4
+A4 D4 G4 E4
+E4 A4 F#4 D4
+G4 F#4 D4 G4
+E4 A4 F#4 D4
+A4 D4 G4 E4
+F#4 A4 E4 G4
+F#4 A4 E4 G4
+D4 F#4 A4 G4
+E4 D4 E4 G4
+D4 G4 E4 A4
+F#4 D4 A4 E4
+F#4 A4 E4 G4
+G4 F#4 D4 G4
+E4 A4 F#4 D4
+F#4 A4 E4 G4
+F#4 A4 E4 G4
+A4 D4 G4 E4
+E4 A4 F#4 D4
+F#4 A4 E4 G4
+A4 D4 G4 E4
+F#4 A4 E4 G4
+G4 F#4 D4 G4
+E4 A4 F#4 D4
+F#4 A4 E4 G4
+F#4 A4 E4 G4
+A4 D4 G4 E4
+E4 A4 F#4 D4
+G4 F#4 D4 G4
+E4 A4 F#4 D4
+A4 D4 G4 E4
+F#4 A4 E4 G4
+F#4 A4 E4 G4
+D4 F#4 A4 G4
+E4 D4 E4 G4
+`
+},
+{
+  name: 'Random Beginner Violin String 3',
+  difficulty: 'beginner',
+  bpm: 15,
+  notes: `
+A4 D5 B4 E5
+B4 E5 C#5 A4
+B4 E5 C#5 A4
+D5 C#5 A4 D5
+B4 E5 C#5 A4
+C#5 E5 B4 D5
+D5 C#5 A4 D5
+A4 C#5 E5 D5
+B4 E5 C#5 A4
+E5 A4 D5 B4
+C#5 A4 E5 B4
+B4 E5 C#5 A4
+D5 C#5 A4 D5
+B4 E5 C#5 A4
+C#5 E5 B4 D5
+D5 C#5 A4 D5
+D5 C#5 A4 D5
+B4 E5 C#5 A4
+A4 C#5 E5 D5
+B4 E5 C#5 A4
+E5 A4 D5 B4
+D5 C#5 A4 D5
+C#5 E5 B4 D5
+A4 C#5 E5 D5
+B4 A4 B4 D5
+A4 D5 B4 E5
+B4 E5 C#5 A4
+B4 E5 C#5 A4
+D5 C#5 A4 D5
+B4 E5 C#5 A4
+C#5 E5 B4 D5
+D5 C#5 A4 D5
+A4 C#5 E5 D5
+B4 E5 C#5 A4
+E5 A4 D5 B4
+C#5 A4 E5 B4
+B4 E5 C#5 A4
+D5 C#5 A4 D5
+B4 E5 C#5 A4
+C#5 E5 B4 D5
+D5 C#5 A4 D5
+D5 C#5 A4 D5
+B4 E5 C#5 A4
+A4 C#5 E5 D5
+B4 E5 C#5 A4
+E5 A4 D5 B4
+D5 C#5 A4 D5
+C#5 E5 B4 D5
+A4 C#5 E5 D5
+B4 A4 B4 D5
+A4 D5 B4 E5
+B4 E5 C#5 A4
+B4 E5 C#5 A4
+D5 C#5 A4 D5
+B4 E5 C#5 A4
+C#5 E5 B4 D5
+D5 C#5 A4 D5
+A4 C#5 E5 D5
+B4 E5 C#5 A4
+E5 A4 D5 B4
+C#5 A4 E5 B4
+B4 E5 C#5 A4
+D5 C#5 A4 D5
+B4 E5 C#5 A4
+C#5 E5 B4 D5
+D5 C#5 A4 D5
+D5 C#5 A4 D5
+B4 E5 C#5 A4
+A4 C#5 E5 D5
+B4 E5 C#5 A4
+E5 A4 D5 B4
+D5 C#5 A4 D5
+C#5 E5 B4 D5
+A4 C#5 E5 D5
+B4 A4 B4 D5
+A4 D5 B4 E5
+B4 E5 C#5 A4
+B4 E5 C#5 A4
+D5 C#5 A4 D5
+B4 E5 C#5 A4
+C#5 E5 B4 D5
+D5 C#5 A4 D5
+A4 C#5 E5 D5
+B4 E5 C#5 A4
+E5 A4 D5 B4
+C#5 A4 E5 B4
+B4 E5 C#5 A4
+D5 C#5 A4 D5
+B4 E5 C#5 A4
+C#5 E5 B4 D5
+D5 C#5 A4 D5
+D5 C#5 A4 D5
+B4 E5 C#5 A4
+A4 C#5 E5 D5
+B4 E5 C#5 A4
+E5 A4 D5 B4
+D5 C#5 A4 D5
+C#5 E5 B4 D5
+A4 C#5 E5 D5
+B4 A4 B4 D5
+`
+},
+{
+  name: 'Random Beginner Violin String 4',
+  difficulty: 'beginner',
+  bpm: 15,
+  notes: `
+E5 A5 F#5 B5
+G#5 E5 B5 F#5
+A5 G#5 E5 A5
+B5 E5 A5 F#5
+G#5 B5 F#5 A5
+G#5 E5 B5 F#5
+F#5 B5 G#5 E5
+B5 E5 A5 F#5
+G#5 B5 F#5 A5
+E5 A5 F#5 A5
+F#5 B5 G#5 E5
+F#5 B5 G#5 E5
+B5 E5 A5 F#5
+B5 E5 A5 F#5
+G#5 B5 F#5 A5
+G#5 E5 B5 F#5
+F#5 B5 G#5 E5
+B5 E5 A5 F#5
+G#5 B5 F#5 A5
+E5 A5 F#5 A5
+E5 G#5 B5 A5
+F#5 E5 F#5 A5
+E5 A5 F#5 B5
+G#5 E5 B5 F#5
+A5 G#5 E5 A5
+B5 E5 A5 F#5
+G#5 B5 F#5 A5
+G#5 E5 B5 F#5
+F#5 B5 G#5 E5
+B5 E5 A5 F#5
+G#5 B5 F#5 A5
+E5 A5 F#5 A5
+F#5 B5 G#5 E5
+F#5 B5 G#5 E5
+B5 E5 A5 F#5
+B5 E5 A5 F#5
+G#5 B5 F#5 A5
+G#5 E5 B5 F#5
+F#5 B5 G#5 E5
+B5 E5 A5 F#5
+G#5 B5 F#5 A5
+E5 A5 F#5 A5
+E5 G#5 B5 A5
+F#5 E5 F#5 A5
+E5 A5 F#5 B5
+G#5 E5 B5 F#5
+A5 G#5 E5 A5
+B5 E5 A5 F#5
+G#5 B5 F#5 A5
+G#5 E5 B5 F#5
+F#5 B5 G#5 E5
+B5 E5 A5 F#5
+G#5 B5 F#5 A5
+E5 A5 F#5 A5
+F#5 B5 G#5 E5
+F#5 B5 G#5 E5
+B5 E5 A5 F#5
+B5 E5 A5 F#5
+G#5 B5 F#5 A5
+G#5 E5 B5 F#5
+F#5 B5 G#5 E5
+B5 E5 A5 F#5
+G#5 B5 F#5 A5
+E5 A5 F#5 A5
+E5 G#5 B5 A5
+F#5 E5 F#5 A5
+E5 A5 F#5 B5
+G#5 E5 B5 F#5
+A5 G#5 E5 A5
+B5 E5 A5 F#5
+G#5 B5 F#5 A5
+G#5 E5 B5 F#5
+F#5 B5 G#5 E5
+B5 E5 A5 F#5
+G#5 B5 F#5 A5
+E5 A5 F#5 A5
+F#5 B5 G#5 E5
+F#5 B5 G#5 E5
+B5 E5 A5 F#5
+B5 E5 A5 F#5
+G#5 B5 F#5 A5
+G#5 E5 B5 F#5
+F#5 B5 G#5 E5
+B5 E5 A5 F#5
+G#5 B5 F#5 A5
+E5 A5 F#5 A5
+E5 G#5 B5 A5
+F#5 E5 F#5 A5
+`
+},
   {
     name: 'Hot Cross Buns',
-    notes: `E4 D4 C4:2
-E4 D4 C4:2
-C4 C4 C4 C4
-D4 D4 D4 D4
-E4 D4 C4:4
-
-E4 D4 C4:2
-E4 D4 C4:2
-C4 C4 D4 D4
+    difficulty: 'beginner',
+    bpm: 72,
+    notes: `B4 A4 G4:2
+B4 A4 G4:2
+G4 G4 G4 G4
+A4 A4 A4 A4
+B4 A4 G4:4`
+  },
+  {
+    name: 'Mary Had a Little Lamb',
+    difficulty: 'beginner',
+    bpm: 76,
+    notes: `E4 D4 C4 D4
+E4 E4 E4:2
+D4 D4 D4:2
+E4 G4 G4:2
+E4 D4 C4 D4
+E4 E4 E4 E4
+D4 D4 E4 D4
+C4:4`
+  },
+  {
+    name: 'Twinkle Twinkle Little Star',
+    difficulty: 'beginner',
+    bpm: 80,
+    notes: `C4 C4 G4 G4
+A4 A4 G4:2
+F4 F4 E4 E4
+D4 D4 C4:2
+G4 G4 F4 F4
+E4 E4 D4:2
+G4 G4 F4 F4
+E4 E4 D4:2
+C4 C4 G4 G4
+A4 A4 G4:2`
+  },
+  {
+    name: 'Row Row Row Your Boat',
+    difficulty: 'beginner',
+    bpm: 84,
+    notes: `C4 C4 C4 D4
+E4:2 E4:2
+D4 E4 F4 G4
+C5 C5 C5 G4
+G4 G4 E4 E4
+C4 C4 G4 F4
 E4 D4 C4:4`
   },
   {
-    name: 'Row, Row, Row Your Boat',
-    notes: `C4 C4 C4 D4 E4:2
-E4 D4 E4 F4 G4:4
-C5 C5 C5 G4 G4 G4
-E4 E4 E4 C4 C4 C4
-G4 F4 E4 D4 C4:4
-
-C4 C4 C4 D4 E4:2
-E4 D4 E4 F4 G4:4
-C5 C5 C5 G4 G4 G4
-E4 E4 E4 C4 C4 C4
-G4 F4 E4 D4 C4:4`
-  },
-  {
-    name: 'London Bridge',
-    notes: `G4 A4 G4 F4 E4 F4 G4:2
-D4 E4 F4 E4 F4 G4:2
-G4 A4 G4 F4 E4 F4 G4:2
-D4 G4 E4 C4:4
-
-G4 A4 G4 F4 E4 F4 G4:2
-D4 E4 F4 E4 F4 G4:2
-G4 A4 G4 F4 E4 F4 G4:2
-D4 G4 E4 C4:4`
-  },
-  {
     name: 'Ode to Joy',
+    difficulty: 'beginner',
+    bpm: 88,
     notes: `E4 E4 F4 G4
 G4 F4 E4 D4
 C4 C4 D4 E4
 E4 D4 D4:2
-
-E4 E4 F4 G4
-G4 F4 E4 D4
-C4 C4 D4 E4
-D4 C4 C4:2
-
-D4 D4 E4 C4
-D4 E4 F4 E4 C4
-D4 E4 F4 E4 D4
-C4 D4 G3:2
-
 E4 E4 F4 G4
 G4 F4 E4 D4
 C4 C4 D4 E4
 D4 C4 C4:4`
   },
   {
-    name: 'Jingle Bells',
-    notes: `G4 E4 D4 C4
-G4:2 G4:2 G4:2
-G4 E4 D4 C4
-A4:4
-
-A4 F4 E4 D4
-B4:2 B4:2 B4:2
-G4 G4 F4 D4
-E4:4
-
-E4 E4 E4:2
-E4 E4 E4:2
-E4 G4 C4 D4 E4:4
-
-F4 F4 F4 F4
-F4 E4 E4 E4
-E4 D4 D4 E4
-D4 G4:4
-
-E4 E4 E4:2
-E4 E4 E4:2
-E4 G4 C4 D4 E4:4
-
-F4 F4 F4 F4
-F4 E4 E4 E4
-G4 G4 F4 D4
-C4:4`
+    name: 'London Bridge',
+    difficulty: 'beginner',
+    bpm: 82,
+    notes: `G4 A4 G4 F4
+E4 F4 G4:2
+D4 E4 F4:2
+E4 F4 G4:2
+G4 A4 G4 F4
+E4 F4 G4:2
+D4 G4 E4 C4:4`
   },
   {
-    name: 'Happy Birthday',
-    notes: `C4 C4 D4 C4 F4 E4:2
-C4 C4 D4 C4 G4 F4:2
-C4 C4 C5 A4 F4 E4 D4:2
-A#4 A#4 A4 F4 G4 F4:4`
-  },
-  {
-    name: 'Mary Had a Little Lamb',
-    notes: `E4 D4 C4 D4
-E4 E4 E4:2
-D4 D4 D4:2
-E4 G4 G4:2
-
-E4 D4 C4 D4
-E4 E4 E4 E4
-D4 D4 E4 D4
-C4:4
-
-E4 D4 C4 D4
-E4 E4 E4:2
-D4 D4 D4:2
-E4 G4 G4:2
-
-E4 D4 C4 D4
-E4 E4 E4 E4
-D4 D4 E4 D4
-C4:4`
-  },
-  {
-    name: 'Amazing Grace',
-    notes: `C4 F4 A4 F4
-A4 G4 F4 D4
-C4 F4 A4 F4
-A4 G4 F4:4
-
-A4 C5 A4 C5
-A4 G4 F4 D4
-C4 F4 A4 F4
-G4 F4:4
-
-C4 F4 A4 F4
-A4 G4 F4 D4
-C4 F4 A4 F4
-A4 G4 F4:4
-
-A4 C5 A4 C5
-A4 G4 F4 D4
-C4 F4 A4 F4
-G4 F4:4`
-  },
-  {
-    name: 'Yankee Doodle',
-    notes: `C4 C4 D4 E4
-C4 E4 D4 G4
-C4 C4 D4 E4
-F4 E4 D4 C4
-
-G4 G4 A4 G4
-F4 E4 D4 C4
-C4 D4 E4 F4
-G4 C4:4
-
-C4 C4 D4 E4
-C4 E4 D4 G4
-C4 C4 D4 E4
-F4 E4 D4 C4
-
-G4 G4 A4 G4
-F4 E4 D4 C4
-C4 D4 E4 F4
-G4 C4:4`
-  },
-  {
-    name: 'This Old Man',
-    notes: `G4 G4 A4 B4
-D5 B4 G4 B4
-A4 A4 B4 C5
-E5 C5 A4 C5
-
-G4 G4 A4 B4
-D5 B4 G4 B4
-A4 B4 C5 A4
-G4:4
-
-G4 G4 A4 B4
-D5 B4 G4 B4
-A4 A4 B4 C5
-E5 C5 A4 C5
-
-G4 G4 A4 B4
-D5 B4 G4 B4
-A4 B4 C5 A4
-G4:4`
-  },
-  {
-    name: 'Are You Sleeping? (Frère Jacques)',
+    name: 'Frere Jacques',
+    difficulty: 'beginner',
+    bpm: 86,
     notes: `C4 D4 E4 C4
 C4 D4 E4 C4
-
 E4 F4 G4:2
 E4 F4 G4:2
-
-G4 A4 G4 F4 E4 C4
-G4 A4 G4 F4 E4 C4
-
-C4 G3 C4:2
+G4 A4 G4 F4
+E4 C4 G4 A4
+G4 F4 E4 C4
 C4 G3 C4:4`
   },
   {
-    name: 'Old MacDonald Had a Farm',
-    notes: `G4 G4 G4 D4 E4 E4 D4
-B4 B4 A4 A4 G4:2
-
-D4 G4 G4 G4 D4 E4 E4 D4
-B4 B4 A4 A4 G4:4
-
-D4 D4 G4 G4 G4
-D4 D4 G4 G4 G4
-G4 G4 G4 G4 G4 G4
-G4 G4 G4 D4 E4 E4 D4
-B4 B4 A4 A4 G4:4`
+    name: 'This Old Man',
+    difficulty: 'beginner',
+    bpm: 92,
+    notes: `G4 E4 G4:2
+G4 E4 G4:2
+A4 G4 F4 E4
+D4 E4 F4:2
+E4 F4 G4:2
+C5 B4 A4 G4
+F4 E4 D4 C4:4`
   },
   {
-    name: "Brahms' Lullaby",
-    notes: `G4 G4 D5 G4
-G4 D5 G4 D4
-
-G4 G4 D5 G4
-A4 G4 F#4:2
-
-D5 D5 A5 F#5
-D5 A4 G4:2
-
-G4 G4 D5 G4
-A4 G4 F#4:4
-
-G4 G4 D5 G4
-G4 D5 G4 D4
-
-G4 G4 D5 G4
-A4 G4 F#4:2
-
-D5 D5 A5 F#5
-D5 A4 G4:2
-
-G4 G4 D5 G4
-A4 G4 F#4:4`
-  },
-  {
-    name: 'Silent Night',
-    notes: `G4 A4 G4 E4
-G4 A4 G4 E4
-
-D5 D5 B4:2
-C5 C5 G4:2
-
-A4 A4 C5 B4 A4
-G4 A4 G4 E4
-
-A4 A4 C5 B4 A4
-G4 A4 G4 E4
-
-D5 D5 F5 D5 B4
-C5 E5:2
-
-C5 G4 E4 G4 F4 D4
-C4:4`
-  },
-  {
-    name: 'Camptown Races',
+    name: 'Skip to My Lou',
+    difficulty: 'beginner',
+    bpm: 96,
     notes: `G4 G4 E4 G4
-A4 G4 E4 C4
-
+A4 A4 G4:2
 G4 G4 E4 G4
-A4 G4 E4 C4
-
-C4 D4 E4 F4
-G4 G4 G4:2
-
-A4 G4 E4 C4
-D4 C4:4
-
-G4 G4 E4 G4
-A4 G4 E4 C4
-
-G4 G4 E4 G4
-A4 G4 E4 C4
-
-C4 D4 E4 F4
-G4 G4 G4:2
-
-A4 G4 E4 C4
-D4 C4:4`
-  },
-  {
-    name: 'When the Saints Go Marching In',
-    notes: `C4 E4 F4 G4
-C5 E4 F4 G4
-
-C5 E4 F4 G4
-E4 C4:2
-
-E4 E4 F4 G4
-A4 G4 F4 E4
-
-G4 E4 C4 D4
-C4:4
-
-C4 E4 F4 G4
-C5 E4 F4 G4
-
-C5 E4 F4 G4
-E4 C4:2
-
-E4 E4 F4 G4
-A4 G4 F4 E4
-
-G4 E4 C4 D4
-C4:4`
-  },
-  {
-    name: 'Scarborough Fair',
-    notes: `E4 G4 A4 G4
-E4 D4 E4:2
-
-G4 A4 B4 A4
-G4 E4:2
-
-E4 G4 A4 G4
-E4 D4 E4:2
-
-G4 E4 D4 C4
-D4:4
-
-E4 G4 A4 G4
-E4 D4 E4:2
-
-G4 A4 B4 A4
-G4 E4:2
-
-B4 C5 B4 A4
-G4 E4 D4 C4
-D4 E4:4`
-  },
-  {
-    name: 'Baa Baa Black Sheep',
-    notes: `C4 C4 G4 G4
 A4 A4 G4:2
-
-F4 F4 E4 E4
-D4 D4 C4:2
-
-G4 G4 F4 F4
-E4 E4 D4:2
-
-G4 G4 F4 F4
-E4 E4 D4:2
-
-C4 C4 G4 G4
-A4 A4 G4:2
-
-F4 F4 E4 E4
-D4 D4 C4:4`
+C5 C5 B4 A4
+G4 A4 B4:2
+C5 B4 A4 G4
+E4 D4 C4:4`
   },
   {
-    name: 'Alphabet Song',
-    notes: `C4 C4 G4 G4
-A4 A4 G4:2
-
-F4 F4 E4 E4
-D4 D4 C4:2
-
-G4 G4 F4 F4
+    name: 'Old MacDonald',
+    difficulty: 'beginner',
+    bpm: 92,
+    notes: `G4 G4 G4 D4
 E4 E4 D4:2
-
-G4 G4 F4 F4
-E4 E4 D4:2
-
-C4 C4 G4 G4
-A4 A4 G4:2
-
-F4 F4 E4 E4
-D4 D4 C4:4`
+B4 B4 A4 A4
+G4:4
+D4 D4 G4 G4
+A4 A4 B4:2
+B4 B4 A4 A4
+G4:4`
   },
   {
-    name: 'Pop Goes the Weasel',
-    notes: `C4 C4 D4 D4
-E4 G4 E4 C4
-
-C4 C4 D4 D4
-E4 C4:2
-
-C4 C4 D4 D4
-E4 G4 E4 C4
-
-A4 D4 F4 E4
-C4:4
-
-C4 C4 D4 D4
-E4 G4 E4 C4
-
-C4 C4 D4 D4
-E4 C4:2
-
-C4 C4 D4 D4
-E4 G4 E4 C4
-
-A4 D4 F4 E4
+    name: 'Yankee Doodle',
+    difficulty: 'beginner',
+    bpm: 100,
+    notes: `C4 C4 D4 E4
+C4 E4 D4:2
+C4 C4 D4 E4
+C4 B3:2
+C4 C4 D4 E4
+F4 E4 D4 C4
+B3 G3 A3 B3
 C4:4`
   },
   {
     name: 'The Muffin Man',
-    notes: `G4 A4 G4 F4
-E4 F4 G4:2
-
-D4 E4 F4 E4
-F4 G4:2
-
-G4 A4 G4 F4
-E4 F4 G4:2
-
-D4 G4 E4 C4:4
-
-G4 A4 G4 F4
-E4 F4 G4:2
-
-D4 E4 F4 E4
-F4 G4:2
-
-G4 A4 G4 F4
-E4 F4 G4:2
-
-D4 G4 E4 C4:4`
-  },
-  {
-    name: 'The Farmer in the Dell',
-    notes: `C4 C4 C4 G4
-A4 A4 G4:2
-
-E4 E4 D4 D4
-C4:4
-
-G4 G4 F4 F4
-E4 E4 D4:2
-
-G4 G4 F4 F4
-E4 E4 D4:2
-
-C4 C4 C4 G4
-A4 A4 G4:2
-
-E4 E4 D4 D4
-C4:4`
-  },
-  {
-    name: 'Hush Little Baby',
-    notes: `G4 G4 A4 B4
-D5 B4 A4 G4
-
-A4 B4 C5 B4
-A4 G4:2
-
-G4 G4 A4 B4
-D5 B4 A4 G4
-
-A4 B4 C5 B4
-A4 G4:4
-
-D5 D5 B4 G4
-A4 B4 C5 B4
-
-A4 G4 A4 B4
-D5 B4 A4 G4:4`
-  },
-  {
-    name: 'For He’s a Jolly Good Fellow',
-    notes: `G4 G4 G4 G4
-F4 E4 D4:2
-
-E4 F4 E4 D4
-C4 D4 E4:2
-
-G4 G4 G4 G4
-F4 E4 D4:2
-
-E4 F4 E4 D4
-C4:4
-
+    difficulty: 'beginner',
+    bpm: 84,
+    notes: `G4 E4 F4 G4
+A4 G4 E4:2
+G4 E4 F4 G4
+A4 G4 E4:2
 D4 D4 E4 F4
-G4 G4 G4:2
-
-A4 A4 G4 F4
-E4 D4 C4:2
-
-G4 G4 G4 G4
-F4 E4 D4:2
-
-E4 F4 E4 D4
-C4:4`
-  },
-  {
-    name: 'Auld Lang Syne',
-    notes: `C4 F4 E4 F4
-A4 G4 F4 G4
-
-A4 F4 A4 C5
-D5 C5 A4:2
-
-C5 A4 F4 G4
-A4 F4 A4 C5
-
-D5 C5 A4 G4
-F4:4
-
-C4 F4 E4 F4
-A4 G4 F4 G4
-
-A4 F4 A4 C5
-D5 C5 A4:2
-
-C5 A4 F4 G4
-A4 F4 A4 C5
-
-D5 C5 A4 G4
-F4:4`
-  },
-  {
-    name: 'We Wish You a Merry Christmas',
-    notes: `G4 C5 C5 D5
-C5 B4 A4 A4
-
-A4 D5 D5 E5
-D5 C5 B4 G4
-
-G4 E5 E5 F5
-E5 D5 C5 A4
-
-G4 G4 A4 D5
-B4 C5:4
-
-G4 C5 C5 C5
-B4 B4 C5 B4
-
-A4 G4 D5 E5
-D5 D5 C5:4`
-  },
-  {
-    name: 'Deck the Halls',
-    notes: `G4 F4 E4 D4
-C4 D4 E4 C4
-
-D4 E4 F4 D4
-E4 F4 G4:2
-
-G4 F4 E4 D4
-C4 D4 E4 C4
-
-A4 A4 A4 A4
-G4 F4 E4 D4
-C4:4
-
-G4 F4 E4 D4
-C4 D4 E4 C4
-
-D4 E4 F4 D4
-E4 F4 G4:2
-
-G4 F4 E4 D4
-C4 D4 E4 C4
-
-A4 A4 A4 A4
-G4 F4 E4 D4
-C4:4`
-  },
-  {
-    name: 'Joy to the World',
-    notes: `C5 B4 A4 G4
-F4 E4 D4 C4
-
-G4 A4 A4 B4
-B4 C5:2
-
-C5 C5 B4 A4
 G4 G4 F4 E4
-
-C5 C5 B4 A4
-G4 G4 F4 E4
-
-E4 E4 E4 E4
-E4 F4 G4:2
-
-F4 E4 D4 D4
-D4 E4 F4:2
-
-E4 D4 C4 G4
-A4 B4 C5:4`
+D4 E4 F4 G4
+E4:4`
   },
   {
-    name: 'Good King Wenceslas',
-    notes: `G4 G4 G4 A4
-G4 G4 D4:2
-
-E4 D4 E4 F4
-G4 G4 G4:2
-
-G4 G4 G4 A4
-G4 G4 D4:2
-
-E4 D4 E4 F4
-G4:4
-
-D5 C5 B4 A4
-G4 G4 D4:2
-
-E4 D4 E4 F4
-G4 G4 G4:2
-
-D5 C5 B4 A4
-G4 G4 D4:2
-
-E4 D4 E4 F4
+    name: 'Bingo',
+    difficulty: 'beginner',
+    bpm: 88,
+    notes: `G4 G4 G4 D4
+E4 E4 D4:2
+G4 G4 G4 D4
+E4 E4 D4:2
+D4 D4 E4 F4
+G4 G4 F4 E4
+D4 D4 E4 F4
 G4:4`
   },
   {
-    name: 'Greensleeves',
-    notes: `E4 G4 A4 B4
-C5 B4 A4 F#4
-
-D4 E4 F#4 G4
-A4 G4 F#4 E4
-
-E4 G4 A4 B4
-C5 B4 A4 F#4
-
-D4 E4 F#4 G4
-A4 G4 E4:4
-
-D5 D5 C5 B4
-A4 F#4 D4 E4
-
-F#4 G4 A4 B4
-A4 G4 F#4 E4
-
-E4 G4 A4 B4
-C5 B4 A4 F#4
-
-D4 E4 F#4 G4
-A4 G4 E4:4`
+    name: 'Jingle Bells',
+    difficulty: 'beginner',
+    bpm: 104,
+    notes: `E4 E4 E4:2
+E4 E4 E4:2
+E4 G4 C4 D4
+E4:4
+F4 F4 F4 F4
+F4 E4 E4 E4
+E4 D4 D4 E4
+D4:2 G4:2`
   },
   {
-    name: 'Aura Lee',
-    notes: `C4 E4 G4 E4
-D4 C4 D4 E4
+    name: 'Good King Wenceslas',
+    difficulty: 'beginner',
+    bpm: 86,
+    notes: `G4 G4 G4 A4
+G4 G4 D4:2
+E4 D4 E4 F4
+G4:4
+G4 G4 G4 A4
+G4 G4 D4:2
+E4 D4 E4 F4
+G4:4`
+  },
 
-F4 E4 D4 C4
-D4 G3:2
-
-C4 E4 G4 E4
-D4 C4 D4 E4
-
-F4 E4 D4 C4
-C4:4
-
+  {
+    name: 'When the Saints Go Marching In',
+    difficulty: 'easy',
+    bpm: 96,
+    notes: `C4 E4 F4 G4
+C4 E4 F4 G4
+C4 E4 F4 G4
+E4 C4 E4 D4:2
+E4 E4 D4 C4
+C4 E4 G4 G4
+F4 E4 F4 G4
+E4 C4 D4 C4:4`
+  },
+  {
+    name: 'Amazing Grace',
+    difficulty: 'easy',
+    bpm: 72,
+    notes: `G4 C5 E5:2
+C5 E5 D5:2
+C5 A4 G4:2
+G4 C5 E5:2
+C5 E5 D5:2
+E5 G5:2
+E5 G5 E5 C5
+A4 G4:4`
+  },
+  {
+    name: 'Auld Lang Syne',
+    difficulty: 'easy',
+    bpm: 78,
+    notes: `C4 F4 F4 F4
+A4 G4 F4 G4
+A4 F4 F4 A4
+C5 D5 C5:2
+A4 F4 F4 F4
+A4 G4 F4 G4
+A4 F4 D4 D4
+C4 F4:4`
+  },
+  {
+    name: 'Camptown Races',
+    difficulty: 'easy',
+    bpm: 108,
+    notes: `G4 G4 E4 G4
+A4 G4 E4:2
+G4 G4 E4 G4
+A4 G4 E4:2
+D4 D4 E4 F4
 G4 G4 A4 G4
-F4 E4 D4 E4
-
-F4 E4 D4 C4
-D4 G3:2
-
-C4 E4 G4 E4
-D4 C4 D4 E4
-
-F4 E4 D4 C4
+E4 C4 D4 E4
 C4:4`
   },
   {
-    name: 'My Bonnie Lies Over the Ocean',
-    notes: `C4 A4 G4 F4
-G4 F4 D4:2
-
-C4 A4 G4 F4
-G4 F4:4
-
-C4 A4 G4 F4
-G4 A4 G4 F4
-
-D4 C4 D4 F4
-E4 D4 C4:4
-
-C4 A4 G4 F4
-G4 F4 D4:2
-
-C4 A4 G4 F4
-G4 F4:4
-
-C4 A4 G4 F4
-G4 A4 G4 F4
-
-D4 C4 D4 F4
-E4 D4 C4:4`
-  },
-  {
-    name: 'Oh! Susanna',
+    name: 'Oh Susanna',
+    difficulty: 'easy',
+    bpm: 100,
     notes: `C4 D4 E4 G4
 G4 A4 G4 E4
-
 C4 D4 E4 E4
 D4 C4 D4:2
-
 C4 D4 E4 G4
 G4 A4 G4 E4
-
-C4 D4 E4 E4
-D4 D4 C4:4
-
-F4 F4 A4 A4
-G4 E4 C4 D4
-
-E4 E4 G4 G4
-F4 D4:2
-
-C4 D4 E4 G4
-G4 A4 G4 E4
-
 C4 D4 E4 E4
 D4 D4 C4:4`
   },
   {
-    name: 'Turkey in the Straw',
-    notes: `D4 E4 F#4 G4
-A4 A4 A4:2
-
-B4 A4 G4 F#4
-E4 E4 E4:2
-
-D4 E4 F#4 G4
-A4 A4 A4:2
-
-B4 A4 G4 F#4
-E4 D4 D4:4
-
-A4 B4 A4 G4
-F#4 G4 A4:2
-
-B4 A4 G4 F#4
-E4 E4 E4:2
-
-D4 E4 F#4 G4
-A4 A4 A4:2
-
-B4 A4 G4 F#4
-E4 D4 D4:4`
+    name: "She'll Be Coming Round the Mountain",
+    difficulty: 'easy',
+    bpm: 112,
+    notes: `G4 G4 G4 E4
+C4 E4 G4:2
+A4 A4 A4 F4
+D4 F4 A4:2
+G4 G4 G4 E4
+C4 E4 G4:2
+G4 A4 G4 E4
+D4 C4:4`
   },
   {
-    name: 'Alouette',
-    notes: `G4 G4 A4 B4
-C5 C5 B4 A4
-
-G4 G4 A4 B4
+    name: "I've Been Working on the Railroad",
+    difficulty: 'easy',
+    bpm: 102,
+    notes: `G4 G4 E4 E4
+G4 G4 E4:2
+G4 A4 B4 C5
+B4 A4 G4:2
+E4 F4 G4 A4
+G4 F4 E4:2
+D4 E4 F4 G4
+E4 D4 C4:4`
+  },
+  {
+    name: 'Home on the Range',
+    difficulty: 'easy',
+    bpm: 76,
+    notes: `G4 C5 B4 A4
+G4 E4 C4:2
+D4 E4 G4 C5
+B4 A4 G4:2
+G4 C5 B4 A4
+G4 E4 C4:2
+D4 E4 G4 A4
+G4:4`
+  },
+  {
+    name: 'My Bonnie Lies Over the Ocean',
+    difficulty: 'easy',
+    bpm: 92,
+    notes: `G4 E4 D4 E4
+G4 E4 D4:2
+G4 E4 D4 E4
+G4 A4 B4:2
 C5 B4 A4 G4
-
-D5 D5 C5 B4
-A4 A4 B4 C5
-
-B4 A4 G4 F#4
-G4:4
-
-G4 G4 A4 B4
-C5 C5 B4 A4
-
-G4 G4 A4 B4
-C5 B4 A4 G4
-
-D5 D5 C5 B4
-A4 A4 B4 C5
-
+A4 G4 E4:2
+D4 E4 G4 A4
+G4:4`
+  },
+  {
+    name: 'Clementine',
+    difficulty: 'easy',
+    bpm: 88,
+    notes: `G4 E4 E4 E4
+C4 D4 E4:2
+F4 D4 D4 D4
+B3 C4 D4:2
+E4 F4 G4 G4
+A4 G4 F4:2
+E4 D4 C4 D4
+E4:4`
+  },
+  {
+    name: 'Take Me Out to the Ball Game',
+    difficulty: 'easy',
+    bpm: 96,
+    notes: `C4 C5 A4 G4
+E4 G4:2
+D4 D5 B4 A4
+F4 A4:2
+E4 F4 G4 A4
+B4 C5 D5:2
+C5 A4 G4 E4
+D4 C4:4`
+  },
+  {
+    name: "My Country 'Tis of Thee",
+    difficulty: 'easy',
+    bpm: 84,
+    notes: `G4 G4 A4 F#4
+G4 A4 B4:2
+B4 C5 B4 A4
+G4 A4 B4:2
+A4 G4 F#4 G4
+A4 B4 C5:2
 B4 A4 G4 F#4
 G4:4`
   },
   {
-    name: 'La Cucaracha',
-    notes: `C4 C4 C4 F4
-A4:2 C4 C4 C4 F4
-A4:2
-
-F4 F4 E4 E4
-D4 D4 C4:2
-
-C4 C4 C4 E4
-G4:2 C4 C4 C4 E4
-G4:2
-
-C5 D5 C5 B4
-A4 G4 F4:4
-
-C4 C4 C4 F4
-A4:2 C4 C4 C4 F4
-A4:2
-
-F4 F4 E4 E4
-D4 D4 C4:2
-
-C4 C4 C4 E4
-G4:2 C4 C4 C4 E4
-G4:2
-
-C5 D5 C5 B4
-A4 G4 F4:4`
+    name: 'Battle Hymn of the Republic',
+    difficulty: 'easy',
+    bpm: 104,
+    notes: `G4 G4 G4 E4
+C4 E4 G4:2
+A4 A4 A4 F4
+D4 F4 A4:2
+G4 G4 G4 E4
+C4 E4 G4:2
+G4 A4 G4 E4
+D4 C4:4`
   },
   {
-    name: 'Sakura Sakura',
-    notes: `A4 A4 B4:2
-A4 A4 B4:2
-
-A4 B4 C5 B4
-A4 B4 A4 F4
-
-E4 C4 E4 F4
-E4 E4 C4:2
-
-A4 B4 C5 B4
-A4 B4 A4 F4
-
-E4 C4 E4 F4
-E4 E4 C4:4`
+    name: 'We Wish You a Merry Christmas',
+    difficulty: 'easy',
+    bpm: 108,
+    notes: `G4 C5 C5 D5
+C5 B4 A4:2
+A4 D5 D5 E5
+D5 C5 B4:2
+G4 E5 E5 F5
+E5 D5 C5 A4
+G4 A4 D5 B4
+C5:4`
   },
   {
-    name: 'Lightly Row',
-    notes: `G4 E4 E4:2
-F4 D4 D4:2
+    name: 'Silent Night',
+    difficulty: 'easy',
+    bpm: 68,
+    notes: `G4 A4 G4 E4:2
+G4 A4 G4 E4:2
+D5 D5 B4:2
+C5 C5 G4:2
+A4 A4 C5 B4
+A4 G4 A4 G4
+E4:4`
+  },
 
-C4 D4 E4 F4
-G4 G4 G4:2
-
-G4 E4 E4:2
-F4 D4 D4:2
-
-C4 E4 G4 G4
-C4:4
-
-D4 D4 D4 D4
-D4 E4 F4:2
-
-E4 E4 E4 E4
-E4 F4 G4:2
-
-G4 E4 E4:2
-F4 D4 D4:2
-
-C4 E4 G4 G4
+  {
+    name: 'The Star-Spangled Banner',
+    difficulty: 'intermediate',
+    bpm: 86,
+    notes: `G4 E4 C4 E4
+G4 C5:2
+E5 D5 C5 E4
+F#4 G4:2
+G4 G4 E5 D5
+C5 B4 A4 B4
+C5 C5 G4 E4
 C4:4`
+  },
+  {
+    name: 'America the Beautiful',
+    difficulty: 'intermediate',
+    bpm: 82,
+    notes: `C4 E4 G4 C5
+B4 A4 G4:2
+A4 B4 C5 E5
+D5 C5 B4:2
+C5 D5 E5 G5
+E5 D5 C5 A4
+G4 A4 B4 C5
+C5:4`
+  },
+  {
+    name: 'Greensleeves',
+    difficulty: 'intermediate',
+    bpm: 92,
+    notes: `A4 C5 D5 E5
+F5 E5 D5 B4
+G4 A4 B4 C5
+A4:2 A4:2
+C5 D5 E5 F5
+E5 D5 C5 A4
+G4 A4 B4 G4
+A4:4`
+  },
+  {
+    name: 'Scarborough Fair',
+    difficulty: 'intermediate',
+    bpm: 78,
+    notes: `D4 D4 A4 A4
+E5 D5 C5 A4
+G4 A4 C5 D5
+A4:2 A4:2
+D5 E5 D5 C5
+A4 G4 A4 C5
+D5 C5 A4 G4
+D4:4`
+  },
+  {
+    name: 'Danny Boy',
+    difficulty: 'intermediate',
+    bpm: 72,
+    notes: `D4 F#4 A4 D5
+C5 B4 A4 F#4
+G4 A4 B4 C5
+D5:2 C5:2
+B4 A4 G4 F#4
+E4 F#4 G4 A4
+B4 A4 G4 E4
+D4:4`
+  },
+  {
+    name: 'Red River Valley',
+    difficulty: 'intermediate',
+    bpm: 82,
+    notes: `G4 C5 C5 B4
+A4 G4 E4:2
+G4 A4 B4 C5
+D5 C5 B4:2
+C5 D5 E5 D5
+C5 B4 A4 G4
+E4 G4 A4 B4
+C5:4`
+  },
+  {
+    name: 'Shenandoah',
+    difficulty: 'intermediate',
+    bpm: 70,
+    notes: `G4 C5 D5 E5
+D5 C5 A4:2
+G4 A4 C5 D5
+E5 D5 C5:2
+A4 C5 E5 D5
+C5 A4 G4:2
+E4 G4 A4 C5
+G4:4`
+  },
+  {
+    name: 'Turkey in the Straw',
+    difficulty: 'intermediate',
+    bpm: 116,
+    notes: `D4 E4 F#4 G4
+A4 B4 A4 F#4
+G4 A4 B4 C5
+D5 C5 B4 A4
+D5 B4 G4 B4
+A4 F#4 D4 F#4
+G4 B4 A4 F#4
+G4:4`
+  },
+  {
+    name: 'Pop Goes the Weasel',
+    difficulty: 'intermediate',
+    bpm: 108,
+    notes: `C4 E4 G4 E4
+C4 E4 G4:2
+D4 F4 A4 F4
+D4 F4 A4:2
+G4 A4 G4 F4
+E4 C4 D4 B3
+C4 E4 G4 B4
+C5:4`
+  },
+  {
+    name: 'Arkansas Traveler',
+    difficulty: 'intermediate',
+    bpm: 120,
+    notes: `D4 F#4 A4 D5
+A4 F#4 D4 F#4
+G4 B4 D5 B4
+G4 B4 A4 G4
+F#4 A4 D5 C5
+B4 A4 G4 F#4
+E4 F#4 G4 A4
+D4:4`
+  },
+  {
+    name: "Sailor's Hornpipe",
+    difficulty: 'intermediate',
+    bpm: 124,
+    notes: `G4 B4 D5 B4
+G4 B4 D5:2
+A4 C5 E5 C5
+A4 C5 E5:2
+D5 C5 B4 A4
+G4 A4 B4 C5
+D5 B4 G4 A4
+G4:4`
+  },
+  {
+    name: 'The Irish Washerwoman',
+    difficulty: 'intermediate',
+    bpm: 126,
+    notes: `G4 B4 G4 D4
+G4 B4 D5 B4
+A4 C5 A4 E4
+A4 C5 E5 C5
+B4 D5 B4 G4
+A4 C5 A4 F#4
+G4 B4 A4 F#4
+G4:4`
+  },
+  {
+    name: 'La Cucaracha',
+    difficulty: 'intermediate',
+    bpm: 112,
+    notes: `C4 C4 C4 F4
+A4 A4 A4:2
+C4 C4 C4 F4
+A4 A4 A4:2
+F4 F4 E4 E4
+D4 D4 C4:2
+C4 D4 E4 F4
+G4 F4:4`
+  },
+  {
+    name: 'The Yellow Rose of Texas',
+    difficulty: 'intermediate',
+    bpm: 104,
+    notes: `G4 E4 G4 C5
+B4 A4 G4:2
+A4 B4 C5 D5
+C5 B4 A4:2
+G4 A4 B4 C5
+D5 E5 D5 C5
+B4 A4 G4 E4
+C4:4`
+  },
+  {
+    name: 'Minuet in G',
+    difficulty: 'intermediate',
+    bpm: 108,
+    notes: `D5 G4 A4 B4
+C5 D5 G4 G4
+E5 C5 D5 E5
+F#5 G5 G4:2
+C5 D5 E5 C5
+D5 B4 C5 A4
+B4 G4 A4 F#4
+G4:4`
+  },
+
+  {
+    name: 'The Entertainer',
+    difficulty: 'hard',
+    bpm: 132,
+    notes: `D4 D#4 E4 C5
+A4 C5 E5 A5
+G5 E5 C5 A4
+B4 C5 D5 B4
+C5 E5 G5 E5
+A4 C5 E5 C5
+D5 F#5 A5 F#5
+G5 E5 C5 A4:4`
+  },
+  {
+    name: 'Maple Leaf Rag',
+    difficulty: 'hard',
+    bpm: 136,
+    notes: `A4 C5 E5 A5
+G#5 A5 E5 C5
+F#4 A4 C5 F#5
+E5 F#5 C5 A4
+D4 F#4 A4 D5
+C5 D5 A4 F#4
+E4 G#4 B4 E5
+A4:4`
+  },
+  {
+    name: 'William Tell Overture',
+    difficulty: 'hard',
+    bpm: 148,
+    notes: `E4:0.5 E4:0.5 E4:0.5 E4:0.5
+E4 G4 C5 G4
+E4 G4 C5 G4
+E5 D5 C5 G4
+E4:0.5 E4:0.5 E4:0.5 E4:0.5
+E4 G4 C5 G4
+E5 D5 C5 G4
+C5:4`
+  },
+  {
+    name: 'Can Can',
+    difficulty: 'hard',
+    bpm: 150,
+    notes: `G4:0.5 G4:0.5 A4:0.5 B4:0.5
+C5 D5 E5 C5
+D5:0.5 C5:0.5 B4:0.5 A4:0.5
+G4 A4 B4 G4
+C5 E5 G5 E5
+D5 F5 A5 F5
+E5 D5 C5 B4
+C5:4`
+  },
+  {
+    name: 'Flight of the Bumblebee',
+    difficulty: 'hard',
+    bpm: 152,
+    notes: `E5:0.5 D#5:0.5 D5:0.5 C#5:0.5
+C5 B4 A#4 A4
+G#4 A4 A#4 B4
+C5 C#5 D5 D#5
+E5 F5 F#5 G5
+G#5 G5 F#5 F5
+E5 D#5 D5 C#5
+C5:4`
+  },
+  {
+    name: 'In the Hall of the Mountain King',
+    difficulty: 'hard',
+    bpm: 132,
+    notes: `A4 B4 C5 D5
+E5 C5 E5:2
+D#5 B4 D#5:2
+D5 A#4 D5:2
+A4 B4 C5 D5
+E5 C5 E5 A5
+G#5 E5 C5 E5
+A4:4`
+  },
+  {
+    name: 'Eine Kleine Nachtmusik',
+    difficulty: 'hard',
+    bpm: 138,
+    notes: `G4 D4 G4 B4
+D5 B4 G4 B4
+D5 G5 F#5 E5
+D5 C5 B4 A4
+G4 D4 G4 B4
+D5 B4 G4 B4
+C5 A4 F#4 A4
+G4:4`
+  },
+  {
+    name: 'The Blue Danube',
+    difficulty: 'hard',
+    bpm: 126,
+    notes: `D4 F#4 A4:2
+A4 F#4 D4:2
+E4 G4 B4:2
+B4 G4 E4:2
+F#4 A4 D5 C#5
+B4 A4 G4 F#4
+E4 F#4 G4 A4
+D4:4`
+  },
+  {
+    name: 'Nutcracker March',
+    difficulty: 'hard',
+    bpm: 136,
+    notes: `G4 G4 G4 A4
+B4 C5 D5:2
+D5 C5 B4 A4
+G4 A4 B4:2
+C5 C5 C5 D5
+E5 F#5 G5:2
+G5 F#5 E5 D5
+C5 B4 A4 G4:4`
+  },
+  {
+    name: 'Dance of the Sugar Plum Fairy',
+    difficulty: 'hard',
+    bpm: 124,
+    notes: `E5 D#5 E5 B4
+D5 C5 A4:2
+C5 E5 A5 G#5
+E5 C5 A4:2
+B4 C5 D#5 E5
+F5 E5 D#5 B4
+C5 A4 B4 G#4
+A4:4`
+  },
+  {
+    name: 'Pomp and Circumstance',
+    difficulty: 'hard',
+    bpm: 112,
+    notes: `G4 C5 E5 G5
+E5 C5 G4:2
+A4 D5 F5 A5
+F5 D5 A4:2
+G4 B4 D5 G5
+F5 E5 D5 C5
+B4 C5 D5 E5
+C5:4`
+  },
+  {
+    name: 'Wedding March',
+    difficulty: 'hard',
+    bpm: 120,
+    notes: `C5 G4 C5 E5
+G5 E5 C5:2
+D5 G4 D5 F5
+A5 F5 D5:2
+E5 C5 G4 C5
+E5 G5 C6 G5
+E5 D5 C5 B4
+C5:4`
+  },
+  {
+    name: 'Bridal Chorus',
+    difficulty: 'hard',
+    bpm: 104,
+    notes: `G4 C5 E5 G5
+E5 C5 G4:2
+A4 C5 F5 A5
+F5 C5 A4:2
+G4 B4 D5 G5
+E5 C5 G4:2
+A4 B4 C5 D5
+C5:4`
+  },
+  {
+    name: 'Toreador Song',
+    difficulty: 'hard',
+    bpm: 132,
+    notes: `G4 G4 G4 C5
+E5 D5 C5 B4
+C5 D5 E5 C5
+G4:2 G4:2
+A4 A4 A4 D5
+F5 E5 D5 C5
+B4 C5 D5 B4
+C5:4`
+  },
+  {
+    name: 'Hungarian Dance No 5',
+    difficulty: 'hard',
+    bpm: 144,
+    notes: `A4 C5 E5 A5
+G#5 A5 E5 C5
+B4 D5 F5 B5
+A5 G#5 F5 E5
+D5 F5 A5 D6
+C6 B5 A5 G#5
+A5 E5 C5 A4
+E4:4`
   }
 ];
 const DEFAULT_SHEET_MUSIC = SHEET_MUSIC_SONGS[0]?.notes ?? 'C4 D4 E4 F4 | G4:2 G4:2 | A4 B4 C5:2 R:2';
@@ -1725,6 +2152,7 @@ const octave = requireElement('octave');
 const frequency = requireElement('frequency');
 const targetFrequency = requireElement('target-frequency');
 const cents = requireElement('cents');
+const scoreDisplay = requireElement('score-display');
 const meterNeedle = requireElement('meter-needle');
 const keySelect = requireElement('key-select');
 const scaleSelect = requireElement('scale-select');
@@ -1733,12 +2161,15 @@ const bpmInput = requireElement('bpm-input');
 const sheetMusicDelayInput = requireElement('sheet-music-delay');
 const noteDisplaySelect = requireElement('note-display-select');
 const staffLetterLabelsToggle = requireElement('staff-letter-labels-toggle');
+const sheetMusicDifficultySelect = requireElement('sheet-music-difficulty-select');
 const sheetMusicSongSelect = requireElement('sheet-music-song-select');
 const sheetMusicFileInput = document.getElementById('sheet-music-file');
 const sheetMusicInput = requireElement('sheet-music-input');
 const loadSheetMusicButton = requireElement('load-sheet-music');
 const restartSheetMusicButton = requireElement('restart-sheet-music');
 const toggleStaffMovementButton = requireElement('toggle-staff-movement');
+const rewindStaffButton = requireElement('rewind-staff-1');
+const fastForewardStaffButton = requireElement('foreward-staff-5');
 const sheetMusicPlaybackStatus = requireElement('sheet-music-playback-status');
 const sheetMusicStatus = requireElement('sheet-music-status');
 const sheetMusicCountdown = requireElement('sheet-music-countdown');
@@ -1752,7 +2183,9 @@ const waveformCanvas = requireElement('waveform');
 const clearStaffButton = requireElement('clear-staff');
 const staffContext = staffCanvas.getContext('2d');
 const waveformContext = waveformCanvas.getContext('2d');
-const NOTE_PLACEMENT_INTERVAL_MS = 100
+const NOTE_PLACEMENT_INTERVAL_MS = 125;
+const MAX_SCORE_PER_SHEET_NOTE = 100;
+const NOTE_SCORE_TIMING_WINDOW_MS = 1000;
 let audioContext = null;
 let analyser = null;
 let mediaStream = null;
@@ -1773,16 +2206,14 @@ let sheetMusicItems = [];
 let nextStaffNoteId = 1;
 let nextSheetMusicItemId = 1;
 let staffStartedAt = performance.now();
-let lastNotePlacementTime = 0
-function canPlaceNote() {
-  const now = performance.now()
-
-  if (now - lastNotePlacementTime < NOTE_PLACEMENT_INTERVAL_MS) {
-    return false
-  }
-
-  lastNotePlacementTime = now
-  return true
+let lastNotePlacementTime = Number.NEGATIVE_INFINITY;
+let scoredPlayedNotes = [];
+function canPlaceNote(now) {
+    if (now - lastNotePlacementTime < NOTE_PLACEMENT_INTERVAL_MS) {
+        return false;
+    }
+    lastNotePlacementTime = now;
+    return true;
 }
 function requireElement(id) {
     const element = document.getElementById(id);
@@ -1828,6 +2259,7 @@ function initializeControls() {
     sheetMusicDelayInput.value = String(DEFAULT_SHEET_MUSIC_DELAY_SECONDS);
     noteDisplaySelect.value = 'symbols';
     staffLetterLabelsToggle.checked = false;
+    initializeSheetMusicDifficultyOptions();
     initializeSheetMusicSongOptions();
     sheetMusicInput.value = DEFAULT_SHEET_MUSIC;
     renderScale();
@@ -1836,26 +2268,46 @@ function initializeControls() {
     ensureStaffAnimation();
     drawStaff(performance.now());
 }
+function initializeSheetMusicDifficultyOptions() {
+    sheetMusicDifficultySelect.replaceChildren();
+    for (const difficulty of SHEET_MUSIC_DIFFICULTIES) {
+        const option = document.createElement('option');
+        option.value = difficulty.value;
+        option.textContent = difficulty.label;
+        sheetMusicDifficultySelect.append(option);
+    }
+    sheetMusicDifficultySelect.value = SHEET_MUSIC_DIFFICULTIES[0]?.value ?? '';
+}
 function initializeSheetMusicSongOptions() {
     sheetMusicSongSelect.replaceChildren();
-    for (const song of SHEET_MUSIC_SONGS) {
+    const songs = getSongsForSelectedDifficulty();
+    for (const song of songs) {
         const option = document.createElement('option');
         option.value = song.name;
-        option.textContent = song.name;
+        option.textContent = `${song.name} (${song.bpm} BPM)`;
         sheetMusicSongSelect.append(option);
     }
-    sheetMusicSongSelect.value = SHEET_MUSIC_SONGS[0]?.name ?? '';
+    sheetMusicSongSelect.value = songs[0]?.name ?? '';
+}
+function getSongsForSelectedDifficulty() {
+    const difficulty = sheetMusicDifficultySelect.value || SHEET_MUSIC_DIFFICULTIES[0]?.value;
+    return SHEET_MUSIC_SONGS.filter(song => song.difficulty === difficulty);
+}
+function getDifficultyLabel(value) {
+    return SHEET_MUSIC_DIFFICULTIES.find(difficulty => difficulty.value === value)?.label ?? value;
 }
 function getSelectedSheetMusicSong() {
-    return SHEET_MUSIC_SONGS.find(song => song.name === sheetMusicSongSelect.value) ?? SHEET_MUSIC_SONGS[0];
+    const songs = getSongsForSelectedDifficulty();
+    return songs.find(song => song.name === sheetMusicSongSelect.value) ?? songs[0] ?? SHEET_MUSIC_SONGS[0];
 }
 function loadSelectedSheetMusicSong(options) {
     const song = getSelectedSheetMusicSong();
     if (!song) {
         return;
     }
+    bpmInput.value = String(clamp(song.bpm, 20, 260));
     sheetMusicInput.value = song.notes;
-    loadSheetMusicFromInput(options, `Loaded ${song.name}.`);
+    loadSheetMusicFromInput(options, `Loaded ${song.name} (${getDifficultyLabel(song.difficulty)}, ${song.bpm} BPM default).`);
 }
 async function initializeAudioInputs() {
     if (!navigator.mediaDevices?.enumerateDevices) {
@@ -1969,7 +2421,9 @@ async function startListening() {
         toggleButton.textContent = 'Stop listening';
         stopStaffAnimation();
         staffNotes = [];
+        scoredPlayedNotes = [];
         activeStaffNote = null;
+        lastNotePlacementTime = Number.NEGATIVE_INFINITY;
         setAudioInputState('connected-listening', `Connected: listening to ${getSelectedInputLabel()}.`);
         animationFrameId = requestAnimationFrame(tick);
     }
@@ -2154,18 +2608,16 @@ function updateReadout(note, pitch, now) {
     }
 }
 function recordStaffNote(note, pitch, now) {
-    const bpm = getBpm();
-    const captureIntervalMs = Math.max(140, 60000 / bpm / 2);
     const current = activeStaffNote;
-    if (current && current.midi === note.midi && now - current.lastHeardAt < captureIntervalMs) {
+    if (current && current.midi === note.midi) {
         current.lastHeardAt = now;
         current.cents = note.cents;
         current.frequency = pitch.frequency;
         current.confidence = pitch.confidence;
+        current.scoreDetails = getPlayedNoteScoreDetailsForClosestTarget(current);
         return;
     }
-    if (current && current.midi === note.midi && now - current.capturedAt < captureIntervalMs) {
-        current.lastHeardAt = now;
+    if (!canPlaceNote(now)) {
         return;
     }
     const staffNote = {
@@ -2175,10 +2627,13 @@ function recordStaffNote(note, pitch, now) {
         capturedBeat: getElapsedBeats(now),
         lastHeardAt: now,
         confidence: pitch.confidence,
-        frequency: pitch.frequency
+        frequency: pitch.frequency,
+        scoreDetails: null
     };
+    staffNote.scoreDetails = getPlayedNoteScoreDetailsForClosestTarget(staffNote);
     nextStaffNoteId += 1;
     staffNotes.push(staffNote);
+    scoredPlayedNotes.push(staffNote);
     activeStaffNote = staffNote;
 }
 function parseSheetMusic(input) {
@@ -2714,8 +3169,86 @@ function applyLoadedSheetMusic(items, options, prefix) {
     const delayText = delaySeconds > 0 ? ` First note starts after ${formatDelaySeconds(delaySeconds)}.` : '';
     sheetMusicStatus.textContent = `${prefix} Loaded ${playableNotes} sheet notes across ${formatBeatCount(totalBeats)} beats.${delayText} Bold notes are the sheet music targets.`;
 }
+function getPlayableSheetMusicItems() {
+    return sheetMusicItems.filter(item => !item.isRest);
+}
+function getClosestSheetMusicTargetForBeat(beat) {
+    let closest = null;
+    let closestDistance = Number.POSITIVE_INFINITY;
+    for (const item of getPlayableSheetMusicItems()) {
+        const distance = Math.abs(beat - item.startBeat);
+        if (distance < closestDistance) {
+            closest = item;
+            closestDistance = distance;
+        }
+    }
+    return closest;
+}
+function getPlayedNoteScoreDetailsForClosestTarget(playedNote) {
+    const target = getClosestSheetMusicTargetForBeat(playedNote.capturedBeat);
+    return target ? scorePlayedNoteAgainstTarget(playedNote, target) : null;
+}
+function scorePlayedNoteAgainstTarget(playedNote, target) {
+    const pitchDistance = Math.abs(playedNote.midi - target.midi);
+    const pitchScore = clamp(1 - pitchDistance / 12, 0, 1);
+    const timingDifferenceMs = Math.abs(playedNote.capturedBeat - target.startBeat) * 60000 / getBpm();
+    const timingScore = clamp(1 - timingDifferenceMs / NOTE_SCORE_TIMING_WINDOW_MS, 0, 1);
+    const confidence = clamp(playedNote.confidence ?? 0, 0, 1);
+    const score = MAX_SCORE_PER_SHEET_NOTE * pitchScore * timingScore * confidence;
+    return {
+        score,
+        scorePercent: score / MAX_SCORE_PER_SHEET_NOTE * 100,
+        pitchScore,
+        timingScore,
+        confidence,
+        pitchDistance,
+        timingDifferenceMs,
+        targetId: target.id
+    };
+}
+function calculatePracticeScore() {
+    const targets = getPlayableSheetMusicItems();
+    const totalPossible = targets.length * MAX_SCORE_PER_SHEET_NOTE;
+    if (totalPossible === 0) {
+        return { score: 0, totalPossible, percentage: null };
+    }
+    const usedPlayedNoteIds = new Set();
+    let score = 0;
+    for (const target of targets) {
+        let bestMatch = null;
+        for (const playedNote of scoredPlayedNotes) {
+            if (usedPlayedNoteIds.has(playedNote.id)) {
+                continue;
+            }
+            const details = scorePlayedNoteAgainstTarget(playedNote, target);
+            if (!bestMatch || details.score > bestMatch.details.score) {
+                bestMatch = { playedNote, details };
+            }
+        }
+        if (bestMatch && bestMatch.details.score > 0) {
+            usedPlayedNoteIds.add(bestMatch.playedNote.id);
+            score += bestMatch.details.score;
+        }
+    }
+    return {
+        score,
+        totalPossible,
+        percentage: clamp(score / totalPossible * 100, 0, 100)
+    };
+}
+function updateScoreDisplay() {
+    const result = calculatePracticeScore();
+    if (result.percentage === null) {
+        scoreDisplay.textContent = '--';
+        scoreDisplay.title = 'Load sheet music to score your played notes.';
+        return;
+    }
+    scoreDisplay.textContent = `${Math.round(result.percentage)}%`;
+    scoreDisplay.title = `${result.score.toFixed(1)} / ${result.totalPossible} possible points`;
+}
 function setSheetMusicError(error) {
     sheetMusicItems = [];
+    updateScoreDisplay();
     const message = error instanceof Error ? error.message : 'Unknown sheet music parsing error';
     sheetMusicStatus.textContent = message;
 }
@@ -3002,8 +3535,27 @@ function restartSheetMusicTimeline() {
     staffStartedAt = now;
     sheetMusicPausedAt = sheetMusicIsPlaying ? null : now;
     staffNotes = [];
+    scoredPlayedNotes = [];
     activeStaffNote = null;
+    lastNotePlacementTime = Number.NEGATIVE_INFINITY;
     ensureStaffAnimation();
+}
+function rewindStaff(seconds) {
+    clearStaffResumeDelay();
+    const now = performance.now();
+    const currentElapsedBeats = getElapsedBeats(now);
+    const rewindBeats = seconds / 60 * getBpm();
+    const targetElapsedBeats = Math.max(-getStartDelayBeats(), currentElapsedBeats - rewindBeats);
+    const timelineNow = getSheetMusicTimelineNow(now);
+    staffStartedAt = timelineNow - (targetElapsedBeats + getStartDelayBeats()) * 60000 / getBpm();
+    staffNotes = staffNotes.filter(note => note.capturedBeat <= targetElapsedBeats);
+    scoredPlayedNotes = scoredPlayedNotes.filter(note => note.capturedBeat <= targetElapsedBeats);
+    activeStaffNote = null;
+    lastNotePlacementTime = Number.NEGATIVE_INFINITY;
+    updateScoreDisplay();
+    updateSheetMusicPlaybackButton();
+    ensureStaffAnimation();
+    drawStaff(now);
 }
 function toggleSheetMusicPlayback() {
     const now = performance.now();
@@ -3207,6 +3759,7 @@ function drawStaff(now) {
     drawPlayhead(ctx, playheadX, height);
     drawSheetMusic(ctx, elapsedBeats, playheadX, width, topLineY, bottomLineY, lineGap);
     drawPlayedNotes(ctx, elapsedBeats, playheadX, width, topLineY, bottomLineY, lineGap);
+    updateScoreDisplay();
     drawStaffLegend(ctx, width, height);
 }
 function drawBeatGrid(ctx, width, height, elapsedBeats, playheadX) {
@@ -3305,10 +3858,13 @@ function drawPlayedNotes(ctx, elapsedBeats, playheadX, width, topLineY, bottomLi
         const x = playheadX + (note.capturedBeat - elapsedBeats) * STAFF_PIXELS_PER_BEAT;
         const y = getStaffYForNote(note);
         const isInScale = getSelectedScaleNotes().includes(note.noteIndex);
+        note.scoreDetails = getPlayedNoteScoreDetailsForClosestTarget(note);
+        const scoreLabel = hasSheetMusic && note.scoreDetails ? `${Math.round(note.scoreDetails.scorePercent)}%` : '';
         drawLedgerLines(ctx, x, y, topLineY, bottomLineY, lineGap, 'rgba(226, 232, 240, 0.5)');
         drawNoteHead(ctx, x, y, note, isInScale, {
             kind: 'played',
             label: `${note.name}${note.octave}`,
+            scoreLabel,
             alpha: hasSheetMusic ? 0.38 : 1
         });
     }
@@ -3401,9 +3957,14 @@ function drawNoteHead(ctx, x, y, note, isInScale, options) {
         ctx.font = isSheet ? 'bold 19px Georgia, serif' : '18px Georgia, serif';
         ctx.fillText(accidental, x - 30, y + 5);
     }
-    ctx.fillStyle = isSheet ? 'rgba(255, 255, 255, 0.96)' : 'rgba(226, 232, 240, 0.86)';
-    ctx.font = isSheet ? 'bold 12px Inter, system-ui, sans-serif' : '12px Inter, system-ui, sans-serif';
-    ctx.fillText(options.label, x - 16, y + 32);
+    // ctx.fillStyle = isSheet ? 'rgba(255, 255, 255, 0.96)' : 'rgba(226, 232, 240, 0.86)';
+    // ctx.font = isSheet ? 'bold 12px Inter, system-ui, sans-serif' : '12px Inter, system-ui, sans-serif';
+    // ctx.fillText(options.label, x - 16, y + 32);
+    if (options.scoreLabel) {
+        ctx.fillStyle = 'rgba(250, 204, 21, 0.9)';
+        ctx.font = 'bold 11px Inter, system-ui, sans-serif';
+        ctx.fillText(options.scoreLabel, x - 13, y + 47);
+    }
     ctx.restore();
 }
 function drawLetterNoteHead(ctx, x, y, isInScale, options) {
@@ -3426,6 +3987,11 @@ function drawLetterNoteHead(ctx, x, y, isInScale, options) {
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(label, x, y + 0.5);
+    if (options.scoreLabel) {
+        ctx.fillStyle = 'rgba(250, 204, 21, 0.92)';
+        ctx.font = 'bold 11px Inter, system-ui, sans-serif';
+        ctx.fillText(options.scoreLabel, x, y + height / 2 + 13);
+    }
     ctx.restore();
 }
 function getPitchClassLabel(label) {
@@ -3499,6 +4065,7 @@ function clearReadout() {
     targetFrequency.textContent = '-- Hz';
     cents.textContent = '-- cents';
     meterNeedle.style.left = '50%';
+    updateScoreDisplay();
     scaleMessage.textContent = 'Detected notes will appear here.';
 }
 function setAudioInputState(state, message) {
@@ -3562,6 +4129,7 @@ scaleSelect.addEventListener('change', () => {
 });
 bpmInput.addEventListener('input', () => {
     bpmInput.value = String(getBpm());
+    updateScoreDisplay();
     drawStaff(performance.now());
 });
 sheetMusicDelayInput.addEventListener('input', () => {
@@ -3577,6 +4145,10 @@ staffLetterLabelsToggle.addEventListener('change', () => {
 loadSheetMusicButton.addEventListener('click', () => {
     loadSheetMusicFromInput({ resetTimeline: true });
 });
+sheetMusicDifficultySelect.addEventListener('change', () => {
+    initializeSheetMusicSongOptions();
+    loadSelectedSheetMusicSong({ resetTimeline: true });
+});
 sheetMusicSongSelect.addEventListener('change', () => {
     loadSelectedSheetMusicSong({ resetTimeline: true });
 });
@@ -3590,9 +4162,18 @@ restartSheetMusicButton.addEventListener('click', () => {
 toggleStaffMovementButton.addEventListener('click', () => {
     toggleSheetMusicPlayback();
 });
+rewindStaffButton.addEventListener('click', () => {
+    rewindStaff(1);
+});
+fastForewardStaffButton.addEventListener('click', () => {
+    rewindStaff(-5);
+});
 clearStaffButton.addEventListener('click', () => {
     staffNotes = [];
+    scoredPlayedNotes = [];
     activeStaffNote = null;
+    lastNotePlacementTime = Number.NEGATIVE_INFINITY;
+    updateScoreDisplay();
     drawStaff(performance.now());
 });
 navigator.mediaDevices?.addEventListener?.('devicechange', () => {
